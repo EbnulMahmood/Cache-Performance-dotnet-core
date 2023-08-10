@@ -216,6 +216,7 @@ LIMIT ?", cancellationToken: token, parameters: topCount);
             }
         }
 
+        // SCALAR QUERY not supported
         public async Task<IEnumerable<StudentExamMarksDto>> LoadStudentsWithLowestMarksAsync(int numberOfStudents = 1, CancellationToken token = default)
         {
             try
@@ -232,22 +233,23 @@ SELECT
     ROUND(SUM(m.MarkValue), 2) AS TotalMarks
 FROM marks m
 JOIN students s ON s.__key = m.StudentId
-GROUP BY s.__key, s.Name, s.RollNumber
-HAVING COUNT(DISTINCT m.ExamId) = (
-    SELECT MAX(ExamCount)
+JOIN (
+    SELECT MAX(ExamCount) AS MaxExamCount
     FROM (
         SELECT COUNT(DISTINCT ExamId) AS ExamCount
         FROM marks
         GROUP BY StudentId
     ) subq
-)
+) mec ON 1=1
+GROUP BY s.__key, s.Name, s.RollNumber, mec.MaxExamCount
+HAVING COUNT(DISTINCT m.ExamId) = mec.MaxExamCount
 ORDER BY SUM(m.MarkValue) ASC
 LIMIT ?", cancellationToken: token, parameters: numberOfStudents);
 
                 studentExamMarksDtoList = await result.Select(row =>
                     new StudentExamMarksDto
                     {
-                        Name = row.GetColumn<string>("name"),
+                        Name = row.GetColumn<string>("Name"),
                         RollNumber = row.GetColumn<string>("RollNumber"),
                         ExamCount = row.GetColumn<int>("ExamCount"),
                         TotalMarks = row.GetColumn<double>("TotalMarks"),
@@ -262,6 +264,7 @@ LIMIT ?", cancellationToken: token, parameters: numberOfStudents);
             }
         }
 
+        // SCALAR QUERY not supported
         public async Task<IEnumerable<StudentExamMarksDto>> LoadStudentsWithHighestMarksAsync(int numberOfStudents = 1, CancellationToken token = default)
         {
             try
@@ -278,22 +281,23 @@ SELECT
     ROUND(SUM(m.MarkValue), 2) AS TotalMarks
 FROM marks m
 JOIN students s ON s.__key = m.StudentId
-GROUP BY s.__key, s.Name, s.RollNumber
-HAVING COUNT(DISTINCT m.ExamId) = (
-    SELECT MIN(ExamCount)
+JOIN (
+    SELECT MIN(ExamCount) AS MinExamCount
     FROM (
         SELECT COUNT(DISTINCT ExamId) AS ExamCount
         FROM marks
         GROUP BY StudentId
     ) subq
-)
+) mec ON 1=1
+GROUP BY s.__key, s.Name, s.RollNumber, mec.MinExamCount
+HAVING COUNT(DISTINCT m.ExamId) = mec.MinExamCount
 ORDER BY SUM(m.MarkValue) DESC
 LIMIT ?", cancellationToken: token, parameters: numberOfStudents);
 
                 studentExamMarksDtoList = await result.Select(row =>
                     new StudentExamMarksDto
                     {
-                        Name = row.GetColumn<string>("name"),
+                        Name = row.GetColumn<string>("Name"),
                         RollNumber = row.GetColumn<string>("RollNumber"),
                         ExamCount = row.GetColumn<int>("ExamCount"),
                         TotalMarks = row.GetColumn<double>("TotalMarks"),
