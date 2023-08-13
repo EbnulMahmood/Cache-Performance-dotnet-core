@@ -18,6 +18,22 @@ namespace CachePerformance.Controllers
             _couchbaseStudentHelper = couchbaseStudentHelper;
         }
 
+        [HttpGet]
+        [Route("/couchbase/cache/students-with-highest-marks/{numberOfStudent}:int")]
+        public async Task<IActionResult> LoadStudentsWithHighestMarks(int numberOfStudent = 1)
+        {
+            try
+            {
+                var studentSubjectMarks = await _couchbaseStudentHelper.LoadStudentsWithHighestMarksAsync(numberOfStudent).ConfigureAwait(false);
+                return Ok(studentSubjectMarks);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         #region Seed Data
         [HttpPost]
         [Route("/couchbase/cache/seed-students")]
