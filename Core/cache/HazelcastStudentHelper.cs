@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Cache
 {
-    public interface IStudentCacheHelper : IStudentQueryService
+    public interface IHazelcastStudentHelper : IStudentQueryService
     {
         Task<int> CacheStudentListAsync(IEnumerable<Student> studentList, CancellationToken token = default);
         Task<int> CacheSubjectListAsync(IEnumerable<Subject> subjectList, CancellationToken token = default);
@@ -15,7 +15,7 @@ namespace Cache
         Task<int> CacheMarkListAsync(IEnumerable<Mark> markList, CancellationToken token = default);
     }
 
-    internal sealed class StudentCacheHelper : IStudentCacheHelper
+    internal sealed class HazelcastStudentHelper : IHazelcastStudentHelper
     {
         private readonly HazelcastOptions _options;
         private const string _mapStudent = "students";
@@ -23,7 +23,7 @@ namespace Cache
         private const string _mapExam = "exams";
         private const string _mapMark = "marks";
 
-        public StudentCacheHelper(HazelcastOptions options)
+        public HazelcastStudentHelper(HazelcastOptions options)
         {
             _options = options;
         }

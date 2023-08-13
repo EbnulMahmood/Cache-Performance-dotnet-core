@@ -4,6 +4,7 @@ using Model;
 using System.Reflection;
 using Cache.Extensions;
 using Services.Extensions;
+using Couchbase.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 
 builder.Services.AddServices();
+
+var couchbaseConfiguration = builder.Configuration.GetSection("Couchbase");
+builder.Services.AddCouchbase(couchbaseConfiguration);
 
 var hazelcastOptions = builder.Configuration.GetSection("hazelcast").Get<HazelcastOptions>();
 builder.Services.AddCacheService(hazelcastOptions);

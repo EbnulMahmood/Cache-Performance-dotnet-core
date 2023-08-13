@@ -6,26 +6,26 @@ namespace CachePerformance.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StudentsCacheController : ControllerBase
+    public class HazelcastStudentsCacheController : ControllerBase
     {
         private readonly IStudentService _studentService;
-        private readonly IStudentCacheHelper _studentCacheHelper;
+        private readonly IHazelcastStudentHelper _hazelcastStudentHelper;
 
-        public StudentsCacheController(IStudentService studentService
-            , IStudentCacheHelper studentCacheHelper)
+        public HazelcastStudentsCacheController(IStudentService studentService
+            , IHazelcastStudentHelper hazelcastStudentHelper)
         {
             _studentService = studentService;
-            _studentCacheHelper = studentCacheHelper;
+            _hazelcastStudentHelper = hazelcastStudentHelper;
         }
 
         [HttpGet]
-        [Route("/cache/subject-wise-highest-marks/and-exam-count")]
+        [Route("/hazelcast/cache/subject-wise-highest-marks/and-exam-count")]
         public async Task<IActionResult> LoadSubjectWiseHighestMarksAndExamCount(CancellationToken token = default)
         {
             try
             {
                 var watch = System.Diagnostics.Stopwatch.StartNew();
-                var studentSubjectMarks = await _studentCacheHelper.LoadSubjectWiseHighestMarksAndExamCountAsync(token);
+                var studentSubjectMarks = await _hazelcastStudentHelper.LoadSubjectWiseHighestMarksAndExamCountAsync(token).ConfigureAwait(false);
                 var count = studentSubjectMarks.Count();
                 watch.Stop();
 
@@ -39,12 +39,12 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/cache/top-performing-students/by-subject")]
+        [Route("/hazelcast/cache/top-performing-students/by-subject")]
         public async Task<IActionResult> LoadTopPerformingStudentsBySubject()
         {
             try
             {
-                var studentSubjectMarks = await _studentCacheHelper.LoadTopPerformingStudentsBySubjectAsync();
+                var studentSubjectMarks = await _hazelcastStudentHelper.LoadTopPerformingStudentsBySubjectAsync().ConfigureAwait(false);
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)
@@ -55,12 +55,12 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/cache/top-students-by-average-mark/{numberOfStudent}:int")]
+        [Route("/hazelcast/cache/top-students-by-average-mark/{numberOfStudent}:int")]
         public async Task<IActionResult> LoadTopStudentsByAverageMark(int numberOfStudent = 1)
         {
             try
             {
-                var studentSubjectMarks = await _studentCacheHelper.LoadTopStudentsByAverageMarkAsync(numberOfStudent);
+                var studentSubjectMarks = await _hazelcastStudentHelper.LoadTopStudentsByAverageMarkAsync(numberOfStudent).ConfigureAwait(false)    ;
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)
@@ -71,12 +71,12 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/cache/low-performing-students/by-average-mark/{numberOfStudent}:int")]
+        [Route("/hazelcast/cache/low-performing-students/by-average-mark/{numberOfStudent}:int")]
         public async Task<IActionResult> LoadLowPerformingStudentsByAverageMark(int numberOfStudent = 1)
         {
             try
             {
-                var studentSubjectMarks = await _studentCacheHelper.LoadLowPerformingStudentsByAverageMarkAsync(numberOfStudent);
+                var studentSubjectMarks = await _hazelcastStudentHelper.LoadLowPerformingStudentsByAverageMarkAsync(numberOfStudent).ConfigureAwait(false);
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)
@@ -87,12 +87,12 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/cache/high-performing-students/by-average-mark/{numberOfStudent}:int")]
+        [Route("/hazelcast/cache/high-performing-students/by-average-mark/{numberOfStudent}:int")]
         public async Task<IActionResult> LoadHighPerformingStudentsByAverageMark(int numberOfStudent = 1)
         {
             try
             {
-                var studentSubjectMarks = await _studentCacheHelper.LoadHighPerformingStudentsByAverageMarkAsync(numberOfStudent);
+                var studentSubjectMarks = await _hazelcastStudentHelper.LoadHighPerformingStudentsByAverageMarkAsync(numberOfStudent).ConfigureAwait(false);
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)
@@ -103,12 +103,12 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/cache/students-with-lowest-marks/{numberOfStudent}:int")]
+        [Route("/hazelcast/cache/students-with-lowest-marks/{numberOfStudent}:int")]
         public async Task<IActionResult> LoadStudentsWithLowestMarks(int numberOfStudent = 1)
         {
             try
             {
-                var studentSubjectMarks = await _studentCacheHelper.LoadStudentsWithLowestMarksAsync(numberOfStudent);
+                var studentSubjectMarks = await _hazelcastStudentHelper.LoadStudentsWithLowestMarksAsync(numberOfStudent).ConfigureAwait(false);
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)
@@ -119,12 +119,12 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/cache/students-with-highest-marks/{numberOfStudent}:int")]
+        [Route("/hazelcast/cache/students-with-highest-marks/{numberOfStudent}:int")]
         public async Task<IActionResult> LoadStudentsWithHighestMarks(int numberOfStudent = 1)
         {
             try
             {
-                var studentSubjectMarks = await _studentCacheHelper.LoadStudentsWithHighestMarksAsync(numberOfStudent);
+                var studentSubjectMarks = await _hazelcastStudentHelper.LoadStudentsWithHighestMarksAsync(numberOfStudent).ConfigureAwait(false);
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)
@@ -136,7 +136,7 @@ namespace CachePerformance.Controllers
 
         #region Seed Data
         [HttpPost]
-        [Route("/cache/seed-students")]
+        [Route("/hazelcast/cache/seed-students")]
         public async Task<IActionResult> SeedData(CancellationToken token = default)
         {
             try
@@ -148,10 +148,10 @@ namespace CachePerformance.Controllers
                 var entitiesStudent = await _studentService.LoadStudentListAsync(token);
                 var entitiesMark = await _studentService.LoadMarkListAsync(token);
 
-                int subjectCount = await _studentCacheHelper.CacheSubjectListAsync(entitiesSubject, token);
-                int examCount = await _studentCacheHelper.CacheExamListAsync(entitiesExam, token);
-                int studentCount = await _studentCacheHelper.CacheStudentListAsync(entitiesStudent, token);
-                int markCount = await _studentCacheHelper.CacheMarkListAsync(entitiesMark, token);
+                int subjectCount = await _hazelcastStudentHelper.CacheSubjectListAsync(entitiesSubject, token).ConfigureAwait(false);
+                int examCount = await _hazelcastStudentHelper.CacheExamListAsync(entitiesExam, token).ConfigureAwait(false);
+                int studentCount = await _hazelcastStudentHelper.CacheStudentListAsync(entitiesStudent, token).ConfigureAwait(false);
+                int markCount = await _hazelcastStudentHelper.CacheMarkListAsync(entitiesMark, token).ConfigureAwait(false);
 
                 watch.Stop();
                 return Ok($"{subjectCount + examCount + studentCount + markCount} Records Load and Save Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
