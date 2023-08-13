@@ -57,6 +57,19 @@ ORDER BY s.Name, sub.Name", cancellationToken: token);
                         ExamCount = row.GetColumn<int>("ExamCount"),
                     }).ToListAsync(token).ConfigureAwait(false);
 
+                //await foreach (var row in result)
+                //{
+                //    studentSubjectMarksDtoList.Add(
+                //        new StudentSubjectMarksDto
+                //        {
+                //            StudentName = row.GetColumn<string>("StudentName"),
+                //            SubjectName = row.GetColumn<string>("SubjectName"),
+                //            HighestMark = row.GetColumn<double>("HighestMark"),
+                //            ExamCount = row.GetColumn<int>("ExamCount"),
+                //        }
+                //    );
+                //}
+
                 return studentSubjectMarksDtoList;
             }
             catch (Exception)
