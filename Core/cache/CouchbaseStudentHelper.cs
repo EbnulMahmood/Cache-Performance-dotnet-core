@@ -69,12 +69,7 @@ namespace Cache
                 var cluster = bucket.Cluster;
                 var result = await cluster.QueryAsync<StudentExamMarksDto>(
 @$"
-SELECT
-META(c).id
-,c.name
-,c.address
-FROM Demo._default.customer c
-WHERE c.deleted IS MISSING;", options =>
+", options =>
 {
     //options.Timeout(TimeSpan.FromSeconds(15));
     options.Readonly(true);
