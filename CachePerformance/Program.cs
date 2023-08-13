@@ -19,7 +19,9 @@ var couchbaseConfiguration = builder.Configuration.GetSection("Couchbase");
 builder.Services.AddCouchbase(couchbaseConfiguration);
 
 var hazelcastOptions = builder.Configuration.GetSection("hazelcast").Get<HazelcastOptions>();
+
 builder.Services.AddCacheService(hazelcastOptions);
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

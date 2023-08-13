@@ -1,5 +1,4 @@
-﻿using CachePerformance.Helpers;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Services;
 
 namespace CachePerformance.Controllers
