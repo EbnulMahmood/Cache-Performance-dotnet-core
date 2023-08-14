@@ -56,6 +56,56 @@ namespace CachePerformance.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("/couchbase/cache/top-performing-students/by-subject")]
+        public async Task<IActionResult> LoadTopPerformingStudentsBySubject()
+        {
+            try
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var studentSubjectMarks = await _couchbaseStudentHelper.LoadTopPerformingStudentsBySubjectAsync();
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                return Ok($"{count} Records Load Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        [HttpGet]
+        [Route("/couchbase/cache/top-students-by-average-mark/{numberOfStudent}:int")]
+        public async Task<IActionResult> LoadTopStudentsByAverageMark(int numberOfStudent = 1)
+        {
+            try
+            {
+                var studentSubjectMarks = await _couchbaseStudentHelper.LoadTopStudentsByAverageMarkAsync(numberOfStudent);
+                return Ok(studentSubjectMarks);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        [HttpGet]
+        [Route("/couchbase/cache/low-performing-students/by-average-mark/{numberOfStudent}:int")]
+        public async Task<IActionResult> LoadLowPerformingStudentsByAverageMark(int numberOfStudent = 1)
+        {
+            try
+            {
+                var studentSubjectMarks = await _couchbaseStudentHelper.LoadLowPerformingStudentsByAverageMarkAsync(numberOfStudent);
+                return Ok(studentSubjectMarks);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         #region Seed Data
         [HttpPost]
         [Route("/couchbase/cache/seed-students")]
