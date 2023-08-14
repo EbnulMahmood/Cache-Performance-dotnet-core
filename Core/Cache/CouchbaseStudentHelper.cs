@@ -5,6 +5,7 @@ using Couchbase.Core.Exceptions.KeyValue;
 using Couchbase.Extensions.DependencyInjection;
 using Couchbase.Query;
 using Model;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Cache
 {
@@ -210,7 +211,8 @@ LIMIT {bottomCount}", options =>
             try
             {
                 var bucket = await _bucketProvider.GetBucketAsync(_bucketName).ConfigureAwait(false);
-                var collectionStudent = await bucket.CollectionAsync(_collectionStudent).ConfigureAwait(false);
+                var scope = await bucket.ScopeAsync(_scopeName).ConfigureAwait(false);
+                var collectionStudent = await scope.CollectionAsync(_collectionStudent).ConfigureAwait(false);
 
                 foreach (var student in studentList)
                 {
@@ -242,7 +244,8 @@ LIMIT {bottomCount}", options =>
             try
             {
                 var bucket = await _bucketProvider.GetBucketAsync(_bucketName).ConfigureAwait(false);
-                var collectionSubject = await bucket.CollectionAsync(_collectionSubject).ConfigureAwait(false);
+                var scope = await bucket.ScopeAsync(_scopeName).ConfigureAwait(false);
+                var collectionSubject = await scope.CollectionAsync(_collectionSubject).ConfigureAwait(false);
 
                 foreach (var subject in subjectList)
                 {
@@ -274,7 +277,8 @@ LIMIT {bottomCount}", options =>
             try
             {
                 var bucket = await _bucketProvider.GetBucketAsync(_bucketName).ConfigureAwait(false);
-                var collectionExam = await bucket.CollectionAsync(_collectionExam).ConfigureAwait(false);
+                var scope = await bucket.ScopeAsync(_scopeName).ConfigureAwait(false);
+                var collectionExam = await scope.CollectionAsync(_collectionExam).ConfigureAwait(false);
 
                 foreach (var exam in examList)
                 {
@@ -306,7 +310,8 @@ LIMIT {bottomCount}", options =>
             try
             {
                 var bucket = await _bucketProvider.GetBucketAsync(_bucketName).ConfigureAwait(false);
-                var collectionMark = await bucket.CollectionAsync(_collectionMark).ConfigureAwait(false);
+                var scope = await bucket.ScopeAsync(_scopeName).ConfigureAwait(false);
+                var collectionMark = await scope.CollectionAsync(_collectionMark).ConfigureAwait(false);
 
                 foreach (var mark in markList)
                 {
