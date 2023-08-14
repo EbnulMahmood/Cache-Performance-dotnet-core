@@ -302,9 +302,36 @@ ORDER BY s.Name, sub.Name
         }
     }
 
-    public Task<IEnumerable<StudentSubjectMarksDto>> LoadTopPerformingStudentsBySubjectAsync(CancellationToken token = default)
+    public async Task<IEnumerable<StudentSubjectMarksDto>> LoadTopPerformingStudentsBySubjectAsync(CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            string query = $@"
+SELECT
+    s.Name AS StudentName,
+    sub.Name AS SubjectName,
+    MAX(m.MarkValue) AS HighestMark,
+    CAST(COUNT(DISTINCT e.Id) AS INT) AS ExamCount
+FROM Mark m
+INNER JOIN ""{_studentCacheName}"".Student s ON s.Id = m.StudentId
+INNER JOIN ""{_subjectCacheName}"".Subject sub ON sub.Id = m.SubjectId
+INNER JOIN ""{_examCacheName}"".Exam e ON e.Id = m.ExamId
+GROUP BY s.Id, s.Name, sub.Id, sub.Name
+HAVING MAX(m.MarkValue) = 100
+";
+
+            var result = _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query);
+
+            var list = new List<StudentSubjectMarksDto>();
+            if (result != null)
+                list = FieldsQueryCursorToList<StudentSubjectMarksDto>(result);
+
+            return list;
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
     }
 
     public async Task<IEnumerable<StudentPerformanceDto>> LoadTopStudentsByAverageMarkAsync(int topCount = 1, CancellationToken token = default)
