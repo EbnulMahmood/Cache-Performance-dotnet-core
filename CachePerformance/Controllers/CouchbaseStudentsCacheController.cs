@@ -18,6 +18,28 @@ namespace CachePerformance.Controllers
             _couchbaseStudentHelper = couchbaseStudentHelper;
         }
 
+
+        [HttpGet]
+        [Route("/couchbase/cache/subject-wise-highest-marks/and-exam-count")]
+        public async Task<IActionResult> LoadSubjectWiseHighestMarksAndExamCount(CancellationToken token = default)
+        {
+            try
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var studentSubjectMarks = await _couchbaseStudentHelper.LoadSubjectWiseHighestMarksAndExamCountAsync(token).ConfigureAwait(false);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                return Ok($"{count} Records Load Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+
         [HttpGet]
         [Route("/couchbase/cache/students-with-highest-marks/{numberOfStudent}:int")]
         public async Task<IActionResult> LoadStudentsWithHighestMarks(int numberOfStudent = 1)

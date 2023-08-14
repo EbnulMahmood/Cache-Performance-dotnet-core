@@ -31,9 +31,39 @@ namespace Cache
             _bucketProvider = bucketProvider;
         }
 
-        public Task<IEnumerable<StudentSubjectMarksDto>> LoadSubjectWiseHighestMarksAndExamCountAsync(CancellationToken token = default)
+        public async Task<IEnumerable<StudentSubjectMarksDto>> LoadSubjectWiseHighestMarksAndExamCountAsync(CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            var bucket = await _bucketProvider.GetBucketAsync(_bucketName).ConfigureAwait(false);
+            var cluster = bucket.Cluster;
+            var result = await cluster.QueryAsync<StudentSubjectMarksDto>(
+                $@"SELECT
+--s.id AS StudentId,
+--ARRAY_AGG(s.name) AS StudentName,
+MAX(s.name) AS StudnetName,
+--sub.id AS SubjectId,
+--ARRAY_AGG(sub.name) AS SubjectName,
+MAX(sub.name) AS SubjectName,
+--ARRAY_AGG(m.markValue) AS Marks,
+--ARRAY_AGG(TONUMBER(m.examId)) AS ExamIds,
+--ARRAY_LENGTH(ARRAY_AGG (DISTINCT m.examId)) AS ExamCount,
+ARRAY_LENGTH(ARRAY_AGG (DISTINCT m.examId)) AS ExamCount,
+MAX(m.markValue) AS HighestMark
+FROM Academy.AcademyScope.Marks AS m
+JOIN Academy.AcademyScope.Students AS s ON META(s).id = m.studentId
+JOIN Academy.AcademyScope.Subjects AS sub ON m.subjectId = META(sub).id
+GROUP BY s.id, sub.id
+--LIMIT 20
+", options =>
+                {
+                    options.ReadOnly(true);
+                    options.CancellationToken(token);
+                });
+            if (result.MetaData?.Status is not QueryStatus.Success)
+            {
+                throw new CouchbaseException("Query Execution Error");
+            }
+
+            return await result.ToListAsync(cancellationToken: token).ConfigureAwait(false);
         }
 
         public Task<IEnumerable<StudentSubjectMarksDto>> LoadTopPerformingStudentsBySubjectAsync(CancellationToken token = default)
