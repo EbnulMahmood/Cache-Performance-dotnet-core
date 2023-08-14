@@ -259,16 +259,91 @@ OFFSET 0 ROWS FETCH NEXT {bottomCount} ROWS ONLY
         }
     }
 
-    //Does not work
-    public Task<IEnumerable<StudentExamMarksDto>> LoadStudentsWithHighestMarksAsync(int numberOfStudents = 1, CancellationToken token = default)
+    public async Task<IEnumerable<StudentExamMarksDto>> LoadStudentsWithHighestMarksAsync(int numberOfStudents = 1, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            string query = $@"
+SELECT 
+    s.Name
+    ,s.RollNumber
+    ,CAST(m.ExamCount AS INT) AS ExamCount
+    ,ROUND(m.TotalMarks, 2) AS TotalMarks
+FROM ( 
+        SELECT 
+            StudentId, COUNT(DISTINCT ExamId) AS ExamCount
+            ,SUM(MarkValue) AS TotalMarks 
+        FROM ""{_markCacheName}"".Mark GROUP BY StudentId 
+    ) m JOIN ""{_studentCacheName}"".Student s ON s.Id = m.StudentId 
+JOIN ( 
+        SELECT 
+            MIN(ExamCount) AS MinExamCount 
+        FROM ( 
+                SELECT 
+                    COUNT(DISTINCT ExamId) AS ExamCount 
+                FROM ""{_markCacheName}"".Mark
+                GROUP BY StudentId 
+            ) subq 
+    ) minq ON m.ExamCount = minq.MinExamCount 
+ORDER BY m.TotalMarks DESC
+LIMIT {numberOfStudents}
+";
+
+            var result = _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query);
+
+            var list = new List<StudentExamMarksDto>();
+            if (result != null)
+                list = FieldsQueryCursorToList<StudentExamMarksDto>(result);
+
+            return list;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
 
-    //Does not work
-    public Task<IEnumerable<StudentExamMarksDto>> LoadStudentsWithLowestMarksAsync(int numberOfStudents = 1, CancellationToken token = default)
+    public async Task<IEnumerable<StudentExamMarksDto>> LoadStudentsWithLowestMarksAsync(int numberOfStudents = 1, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            string query = $@"
+SELECT 
+    s.Name
+    ,s.RollNumber
+    ,CAST(m.ExamCount AS INT) AS ExamCount
+    ,ROUND(m.TotalMarks, 2) AS TotalMarks
+FROM ( 
+        SELECT 
+            StudentId
+            ,COUNT(DISTINCT ExamId) AS ExamCount
+            ,SUM(MarkValue) AS TotalMarks
+        FROM ""{_markCacheName}"".Mark GROUP BY StudentId
+    ) m JOIN ""{_studentCacheName}"".Student s ON s.Id = m.StudentId 
+JOIN ( 
+        SELECT 
+            MAX(ExamCount) AS MaxExamCount
+        FROM ( 
+                SELECT 
+                    COUNT(DISTINCT ExamId) AS ExamCount
+                FROM ""{_markCacheName}"".Mark GROUP BY StudentId 
+            ) subq 
+    ) maxq ON m.ExamCount = maxq.MaxExamCount 
+ORDER BY m.TotalMarks ASC LIMIT {numberOfStudents}
+";
+
+            var result = _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query);
+
+            var list = new List<StudentExamMarksDto>();
+            if (result != null)
+                list = FieldsQueryCursorToList<StudentExamMarksDto>(result);
+
+            return list;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
 
     public async Task<IEnumerable<StudentSubjectMarksDto>> LoadSubjectWiseHighestMarksAndExamCountAsync(CancellationToken token = default)
