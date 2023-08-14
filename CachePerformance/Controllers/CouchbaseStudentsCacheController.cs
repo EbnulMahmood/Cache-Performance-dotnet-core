@@ -102,7 +102,6 @@ namespace CachePerformance.Controllers
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
