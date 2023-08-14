@@ -149,9 +149,31 @@ LIMIT {bottomCount}", options =>
             return await result.ToListAsync(cancellationToken: token).ConfigureAwait(false);
         }
 
-        public Task<IEnumerable<StudentPerformanceDto>> LoadHighPerformingStudentsByAverageMarkAsync(int topCount = 1, CancellationToken token = default)
+        public async Task<IEnumerable<StudentPerformanceDto>> LoadHighPerformingStudentsByAverageMarkAsync(int topCount = 1, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            var bucket = await _bucketProvider.GetBucketAsync(_bucketName).ConfigureAwait(false);
+            var cluster = bucket.Cluster;
+            var result = await cluster.QueryAsync<StudentPerformanceDto>(
+                $@"SELECT
+MAX(s.name) AS StudentName
+,ROUND(AVG(m.markValue), 2) AS AverageMark
+,COUNT(DISTINCT e.id) AS ExamCount
+FROM Academy.AcademyScope.Marks AS m
+JOIN Academy.AcademyScope.Students AS s ON META(s).id = m.studentId
+JOIN Academy.AcademyScope.Exams AS e ON META(e).id = m.examId
+GROUP BY s.id
+ORDER BY AverageMark DESC
+LIMIT {topCount}", options =>
+                {
+                    options.ReadOnly(true);
+                    options.CancellationToken(token);
+                });
+            if (result.MetaData?.Status is not QueryStatus.Success)
+            {
+                throw new CouchbaseException("Query Execution Error");
+            }
+
+            return await result.ToListAsync(cancellationToken: token).ConfigureAwait(false);
         }
 
         public Task<IEnumerable<StudentExamMarksDto>> LoadStudentsWithLowestMarksAsync(int numberOfStudents = 1, CancellationToken token = default)

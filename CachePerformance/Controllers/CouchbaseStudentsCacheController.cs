@@ -106,6 +106,21 @@ namespace CachePerformance.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("/couchbase/cache/high-performing-students/by-average-mark/{numberOfStudent}:int")]
+        public async Task<IActionResult> LoadHighPerformingStudentsByAverageMark(int numberOfStudent = 1)
+        {
+            try
+            {
+                var studentSubjectMarks = await _couchbaseStudentHelper.LoadHighPerformingStudentsByAverageMarkAsync(numberOfStudent);
+                return Ok(studentSubjectMarks);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         #region Seed Data
         [HttpPost]
         [Route("/couchbase/cache/seed-students")]
