@@ -48,7 +48,7 @@ MAX(sub.name) AS SubjectName,
 --ARRAY_AGG(m.markValue) AS Marks,
 --ARRAY_AGG(TONUMBER(m.examId)) AS ExamIds,
 --ARRAY_LENGTH(ARRAY_AGG (DISTINCT m.examId)) AS ExamCount,
-ARRAY_LENGTH(ARRAY_AGG (DISTINCT m.examId)) AS ExamCount,
+--ARRAY_LENGTH(ARRAY_AGG (DISTINCT m.examId)) AS ExamCount,
 MAX(m.markValue) AS HighestMark
 FROM Academy.AcademyScope.Marks AS m
 JOIN Academy.AcademyScope.Students AS s ON META(s).id = m.studentId
