@@ -241,23 +241,30 @@ LIMIT ?", cancellationToken: token, parameters: topCount);
 
                 await using var result = await client.Sql.ExecuteQueryAsync($@"
 SELECT 
-    s.Name,
-    s.RollNumber,
-    CAST(COUNT(DISTINCT m.ExamId) AS int) AS ExamCount,
-    ROUND(SUM(m.MarkValue), 2) AS TotalMarks
-FROM marks m
+    s.Name
+    ,s.RollNumber
+    ,CAST(m.ExamCount AS INT) AS ExamCount
+    ,ROUND(m.TotalMarks, 2) AS TotalMarks
+FROM (
+  SELECT 
+    StudentId
+    ,COUNT(DISTINCT ExamId) AS ExamCount
+    ,SUM(MarkValue) AS TotalMarks
+  FROM marks
+  GROUP BY StudentId
+) m
 JOIN students s ON s.__key = m.StudentId
 JOIN (
-    SELECT MAX(ExamCount) AS MaxExamCount
-    FROM (
-        SELECT COUNT(DISTINCT ExamId) AS ExamCount
-        FROM marks
-        GROUP BY StudentId
-    ) subq
-) mec ON 1=1
-GROUP BY s.__key, s.Name, s.RollNumber, mec.MaxExamCount
-HAVING COUNT(DISTINCT m.ExamId) = mec.MaxExamCount
-ORDER BY SUM(m.MarkValue) ASC
+  SELECT 
+    MAX(ExamCount) AS MaxExamCount
+  FROM (
+    SELECT 
+        COUNT(DISTINCT ExamId) AS ExamCount
+    FROM marks
+    GROUP BY StudentId
+  ) subq
+) mec ON m.ExamCount = mec.MaxExamCount
+ORDER BY m.TotalMarks ASC
 LIMIT ?", cancellationToken: token, parameters: numberOfStudents);
 
                 studentExamMarksDtoList = await result.Select(row =>
@@ -289,23 +296,30 @@ LIMIT ?", cancellationToken: token, parameters: numberOfStudents);
 
                 await using var result = await client.Sql.ExecuteQueryAsync($@"
 SELECT 
-    s.Name,
-    s.RollNumber,
-    CAST(COUNT(DISTINCT m.ExamId) AS int) AS ExamCount,
-    ROUND(SUM(m.MarkValue), 2) AS TotalMarks
-FROM marks m
+    s.Name
+    ,s.RollNumber
+    ,CAST(m.ExamCount AS INT) AS ExamCount
+    ,ROUND(m.TotalMarks, 2) AS TotalMarks
+FROM (
+  SELECT 
+    StudentId
+    ,COUNT(DISTINCT ExamId) AS ExamCount
+    ,SUM(MarkValue) AS TotalMarks
+  FROM marks
+  GROUP BY StudentId
+) m
 JOIN students s ON s.__key = m.StudentId
 JOIN (
-    SELECT MIN(ExamCount) AS MinExamCount
-    FROM (
-        SELECT COUNT(DISTINCT ExamId) AS ExamCount
-        FROM marks
-        GROUP BY StudentId
-    ) subq
-) mec ON 1=1
-GROUP BY s.__key, s.Name, s.RollNumber, mec.MinExamCount
-HAVING COUNT(DISTINCT m.ExamId) = mec.MinExamCount
-ORDER BY SUM(m.MarkValue) DESC
+  SELECT 
+    MIN(ExamCount) AS MinExamCount
+  FROM (
+    SELECT 
+        COUNT(DISTINCT ExamId) AS ExamCount
+    FROM marks
+    GROUP BY StudentId
+  ) subq
+) mec ON m.ExamCount = mec.MinExamCount
+ORDER BY m.TotalMarks DESC
 LIMIT ?", cancellationToken: token, parameters: numberOfStudents);
 
                 studentExamMarksDtoList = await result.Select(row =>
