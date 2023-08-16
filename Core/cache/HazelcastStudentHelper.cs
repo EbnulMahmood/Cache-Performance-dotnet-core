@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace Cache
 {
-    public interface IHazelcastStudentHelper : IStudentQueryService
+    public interface IHazelcastStudentHelper : IStudentQueryServiceAsync
     {
         Task<int> CacheStudentListAsync(IEnumerable<Student> studentList, CancellationToken token = default);
         Task<int> CacheSubjectListAsync(IEnumerable<Subject> subjectList, CancellationToken token = default);

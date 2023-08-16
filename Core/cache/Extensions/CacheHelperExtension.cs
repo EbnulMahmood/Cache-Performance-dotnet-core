@@ -1,4 +1,5 @@
-﻿using Hazelcast;
+﻿using Cache.ApacheIgnite;
+using Hazelcast;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cache.Extensions
@@ -10,6 +11,13 @@ namespace Cache.Extensions
             services.AddSingleton<IHazelcastStudentHelper, HazelcastStudentHelper>(_ => new HazelcastStudentHelper(hazelcastOptions));
             services.AddSingleton<ICouchbaseStudentHelper, CouchbaseStudentHelper>();
             services.AddSingleton<ISingleStoreHelper, SingleStoreHelper>();
+        }
+
+        public static void AddIgniteCacheService(this IServiceCollection services, params string[] endPoints)
+        {
+            services.AddSingleton<IClient>(new IgniteConnection(endPoints));
+            services.AddScoped<IIgniteCacheServicce, IgniteCacheService>();
+            services.AddScoped<IIgniteStudentCacheHelper, IgniteStudentCacheHelper>();
         }
     }
 }

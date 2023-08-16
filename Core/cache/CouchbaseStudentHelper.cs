@@ -9,7 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Cache
 {
-    public interface ICouchbaseStudentHelper : IStudentQueryService
+    public interface ICouchbaseStudentHelper : IStudentQueryServiceAsync
     {
         Task<int> CacheStudentListAsync(IEnumerable<Student> studentList, CancellationToken token = default);
         Task<int> CacheSubjectListAsync(IEnumerable<Subject> subjectList, CancellationToken token = default);
