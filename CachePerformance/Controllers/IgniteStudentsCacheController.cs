@@ -21,12 +21,12 @@ namespace CachePerformance.Controllers
 
         [HttpGet]
         [Route("/ignite/cache/subject-wise-highest-marks/and-exam-count")]
-        public IActionResult LoadSubjectWiseHighestMarksAndExamCount()
+        public async Task<IActionResult> LoadSubjectWiseHighestMarksAndExamCount(CancellationToken token = default)
         {
             try
             {
                 var watch = System.Diagnostics.Stopwatch.StartNew();
-                var studentSubjectMarks = _igniteStudentCacheHelper.LoadSubjectWiseHighestMarksAndExamCount();
+                var studentSubjectMarks = await _igniteStudentCacheHelper.LoadSubjectWiseHighestMarksAndExamCountAsync(token);
                 var count = studentSubjectMarks.Count();
                 watch.Stop();
 
@@ -41,11 +41,11 @@ namespace CachePerformance.Controllers
 
         [HttpGet]
         [Route("/ignite/cache/top-performing-students/by-subject")]
-        public IActionResult LoadTopPerformingStudentsBySubject()
+        public async Task<IActionResult> LoadTopPerformingStudentsBySubject()
         {
             try
             {
-                var studentSubjectMarks = _igniteStudentCacheHelper.LoadTopPerformingStudentsBySubject();
+                var studentSubjectMarks = await _igniteStudentCacheHelper.LoadTopPerformingStudentsBySubjectAsync();
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)
@@ -57,11 +57,11 @@ namespace CachePerformance.Controllers
 
         [HttpGet]
         [Route("/ignite/cache/top-students-by-average-mark/{numberOfStudent}:int")]
-        public IActionResult LoadTopStudentsByAverageMark(int numberOfStudent = 1)
+        public async Task<IActionResult> LoadTopStudentsByAverageMark(int numberOfStudent = 1)
         {
             try
             {
-                var studentSubjectMarks = _igniteStudentCacheHelper.LoadTopStudentsByAverageMark(numberOfStudent);
+                var studentSubjectMarks = await _igniteStudentCacheHelper.LoadTopStudentsByAverageMarkAsync(numberOfStudent);
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)
@@ -73,11 +73,11 @@ namespace CachePerformance.Controllers
 
         [HttpGet]
         [Route("/ignite/cache/low-performing-students/by-average-mark/{numberOfStudent}:int")]
-        public IActionResult LoadLowPerformingStudentsByAverageMark(int numberOfStudent = 1)
+        public async Task<IActionResult> LoadLowPerformingStudentsByAverageMark(int numberOfStudent = 1)
         {
             try
             {
-                var studentSubjectMarks = _igniteStudentCacheHelper.LoadLowPerformingStudentsByAverageMark(numberOfStudent);
+                var studentSubjectMarks = await _igniteStudentCacheHelper.LoadLowPerformingStudentsByAverageMarkAsync(numberOfStudent);
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)
@@ -89,11 +89,11 @@ namespace CachePerformance.Controllers
 
         [HttpGet]
         [Route("/ignite/cache/high-performing-students/by-average-mark/{numberOfStudent}:int")]
-        public IActionResult LoadHighPerformingStudentsByAverageMark(int numberOfStudent = 1)
+        public async Task<IActionResult> LoadHighPerformingStudentsByAverageMark(int numberOfStudent = 1)
         {
             try
             {
-                var studentSubjectMarks = _igniteStudentCacheHelper.LoadHighPerformingStudentsByAverageMark(numberOfStudent);
+                var studentSubjectMarks = await _igniteStudentCacheHelper.LoadHighPerformingStudentsByAverageMarkAsync(numberOfStudent);
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)
@@ -105,11 +105,11 @@ namespace CachePerformance.Controllers
 
         [HttpGet]
         [Route("/ignite/cache/students-with-lowest-marks/{numberOfStudent}:int")]
-        public IActionResult LoadStudentsWithLowestMarks(int numberOfStudent = 1)
+        public async Task<IActionResult> LoadStudentsWithLowestMarks(int numberOfStudent = 1)
         {
             try
             {
-                var studentSubjectMarks = _igniteStudentCacheHelper.LoadStudentsWithLowestMarks(numberOfStudent);
+                var studentSubjectMarks = await _igniteStudentCacheHelper.LoadStudentsWithLowestMarksAsync(numberOfStudent);
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)
@@ -121,11 +121,11 @@ namespace CachePerformance.Controllers
 
         [HttpGet]
         [Route("/ignite/cache/students-with-highest-marks/{numberOfStudent}:int")]
-        public IActionResult LoadStudentsWithHighestMarks(int numberOfStudent = 1)
+        public async Task<IActionResult> LoadStudentsWithHighestMarks(int numberOfStudent = 1)
         {
             try
             {
-                var studentSubjectMarks = _igniteStudentCacheHelper.LoadStudentsWithHighestMarks(numberOfStudent);
+                var studentSubjectMarks = await _igniteStudentCacheHelper.LoadStudentsWithHighestMarksAsync(numberOfStudent);
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)

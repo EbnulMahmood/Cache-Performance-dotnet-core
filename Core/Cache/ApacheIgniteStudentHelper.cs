@@ -8,7 +8,7 @@ using CacheEntity = ApacheIgnite.Entity;
 
 namespace Cache;
 
-public interface IIgniteStudentCacheHelper : IStudentQueryService
+public interface IIgniteStudentCacheHelper : IStudentQueryServiceAsync
 {
     Task<int> CacheStudentListAsync(IEnumerable<Student> studentList, CancellationToken token = default);
     Task<int> CacheSubjectListAsync(IEnumerable<Subject> subjectList, CancellationToken token = default);
@@ -197,7 +197,7 @@ internal sealed class IgniteStudentCacheHelper : IIgniteStudentCacheHelper
         }
     }
 
-    public IEnumerable<StudentPerformanceDto> LoadHighPerformingStudentsByAverageMark(int topCount = 1)
+    public async Task<IEnumerable<StudentPerformanceDto>> LoadHighPerformingStudentsByAverageMarkAsync(int topCount = 1, CancellationToken token = default)
     {
         try
         {
@@ -214,7 +214,7 @@ ORDER BY AverageMark DESC
 OFFSET 0 ROWS FETCH NEXT {topCount} ROWS ONLY
 ";
 
-            var result = _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query);
+            var result = await Task.Run(() => _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query));
             var list = new List<StudentPerformanceDto>();
 
             if (result != null)
@@ -228,7 +228,7 @@ OFFSET 0 ROWS FETCH NEXT {topCount} ROWS ONLY
         }
     }
 
-    public IEnumerable<StudentPerformanceDto> LoadLowPerformingStudentsByAverageMark(int bottomCount = 1)
+    public async Task<IEnumerable<StudentPerformanceDto>> LoadLowPerformingStudentsByAverageMarkAsync(int bottomCount = 1, CancellationToken token = default)
     {
         try
         {
@@ -245,7 +245,7 @@ ORDER BY AverageMark ASC
 OFFSET 0 ROWS FETCH NEXT {bottomCount} ROWS ONLY
 ";
 
-            var result = _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query);
+            var result = await Task.Run(() => _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query));
 
             var list = new List<StudentPerformanceDto>();
             if (result != null)
@@ -259,7 +259,7 @@ OFFSET 0 ROWS FETCH NEXT {bottomCount} ROWS ONLY
         }
     }
 
-    public IEnumerable<StudentExamMarksDto> LoadStudentsWithHighestMarks(int numberOfStudents = 1)
+    public async Task<IEnumerable<StudentExamMarksDto>> LoadStudentsWithHighestMarksAsync(int numberOfStudents = 1, CancellationToken token = default)
     {
         try
         {
@@ -289,7 +289,7 @@ ORDER BY m.TotalMarks DESC
 LIMIT {numberOfStudents}
 ";
 
-            var result = _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query);
+            var result = await Task.Run(() => _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query));
 
             var list = new List<StudentExamMarksDto>();
             if (result != null)
@@ -303,7 +303,7 @@ LIMIT {numberOfStudents}
         }
     }
 
-    public IEnumerable<StudentExamMarksDto> LoadStudentsWithLowestMarks(int numberOfStudents = 1)
+    public async Task<IEnumerable<StudentExamMarksDto>> LoadStudentsWithLowestMarksAsync(int numberOfStudents = 1, CancellationToken token = default)
     {
         try
         {
@@ -332,7 +332,7 @@ JOIN (
 ORDER BY m.TotalMarks ASC LIMIT {numberOfStudents}
 ";
 
-            var result = _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query);
+            var result = await Task.Run(() => _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query));
 
             var list = new List<StudentExamMarksDto>();
             if (result != null)
@@ -346,7 +346,7 @@ ORDER BY m.TotalMarks ASC LIMIT {numberOfStudents}
         }
     }
 
-    public IEnumerable<StudentSubjectMarksDto> LoadSubjectWiseHighestMarksAndExamCount()
+    public async Task<IEnumerable<StudentSubjectMarksDto>> LoadSubjectWiseHighestMarksAndExamCountAsync(CancellationToken token = default)
     {
         try
         {
@@ -363,7 +363,7 @@ GROUP BY s.Id, s.Name, sub.Id, sub.Name
 ORDER BY s.Name, sub.Name
 ";
 
-            var result = _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query);
+            var result = await Task.Run(() => _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query));
 
             var list = new List<StudentSubjectMarksDto>();
             if (result != null)
@@ -377,7 +377,7 @@ ORDER BY s.Name, sub.Name
         }
     }
 
-    public IEnumerable<StudentSubjectMarksDto> LoadTopPerformingStudentsBySubject()
+    public async Task<IEnumerable<StudentSubjectMarksDto>> LoadTopPerformingStudentsBySubjectAsync(CancellationToken token = default)
     {
         try
         {
@@ -395,7 +395,7 @@ GROUP BY s.Id, s.Name, sub.Id, sub.Name
 HAVING MAX(m.MarkValue) = 100
 ";
 
-            var result = _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query);
+            var result = await Task.Run(() => _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query));
 
             var list = new List<StudentSubjectMarksDto>();
             if (result != null)
@@ -409,7 +409,7 @@ HAVING MAX(m.MarkValue) = 100
         }
     }
 
-    public IEnumerable<StudentPerformanceDto> LoadTopStudentsByAverageMark(int topCount = 1)
+    public async Task<IEnumerable<StudentPerformanceDto>> LoadTopStudentsByAverageMarkAsync(int topCount = 1, CancellationToken token = default)
     {
         try
         {
@@ -426,7 +426,7 @@ ORDER BY AverageMark DESC
 OFFSET 0 ROWS FETCH NEXT {topCount} ROWS ONLY
 ";
 
-            var result = _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query);
+            var result = await Task.Run(() => _cacheService.ExecuteQuery<long, CacheEntity.Mark>(_markCacheName, query));
 
             var list = new List<StudentPerformanceDto>();
             if (result != null)
