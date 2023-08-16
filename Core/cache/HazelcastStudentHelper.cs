@@ -2,6 +2,7 @@
 using Common.Dto;
 using Hazelcast;
 using Hazelcast.Core;
+using Hazelcast.Models;
 using Model;
 using System.Text.Json;
 
@@ -341,6 +342,17 @@ LIMIT ?", cancellationToken: token, parameters: numberOfStudents);
                     studentsDictionary.Add(student.Id, jsonObj);
                 }
 
+                // Create a sorted index on the Id attribute
+                await map.AddIndexAsync(IndexType.Sorted, "Id").ConfigureAwait(false);
+
+                // Create a hash index on the Name attribute
+                await map.AddIndexAsync(IndexType.Hashed, "Name").ConfigureAwait(false);
+
+                #region bitmap indexes are not supported by Hazelcast SQL
+                // Create a bitmap index on the RollNumber attribute
+                // await map.AddIndexAsync(IndexType.Bitmap, "RollNumber").ConfigureAwait(false);
+                #endregion
+
                 await client.Sql.ExecuteCommandAsync($@"
 CREATE OR REPLACE MAPPING 
 {map.Name} (
@@ -382,6 +394,12 @@ TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellati
                     var jsonObj = new HazelcastJsonValue(jsonString);
                     subjectsDictionary.Add(subject.Id, jsonObj);
                 }
+
+                // Create a sorted index on the Id attribute
+                await map.AddIndexAsync(IndexType.Sorted, "Id").ConfigureAwait(false);
+
+                // Create a hash index on the Name attribute
+                await map.AddIndexAsync(IndexType.Hashed, "Name").ConfigureAwait(false);
 
                 await client.Sql.ExecuteCommandAsync($@"
 CREATE OR REPLACE MAPPING 
@@ -425,6 +443,12 @@ TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellati
                     var jsonObj = new HazelcastJsonValue(jsonString);
                     examsDictionary.Add(exam.Id, jsonObj);
                 }
+
+                // Create a sorted index on the Id attribute
+                await map.AddIndexAsync(IndexType.Sorted, "Id").ConfigureAwait(false);
+
+                // Create a sorted index on the ExamDate attribute
+                await map.AddIndexAsync(IndexType.Sorted, "ExamDate").ConfigureAwait(false);
 
                 await client.Sql.ExecuteCommandAsync($@"
 CREATE OR REPLACE MAPPING 
@@ -477,6 +501,32 @@ TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellati
                     var jsonObj = new HazelcastJsonValue(jsonString);
                     marksDictionary.Add(mark.Id, jsonObj);
                 }
+
+                // Create a sorted index on the Id attribute
+                await map.AddIndexAsync(IndexType.Sorted, "Id").ConfigureAwait(false);
+
+                // Create a sorted index on the MarkValue attribute
+                await map.AddIndexAsync(IndexType.Sorted, "MarkValue").ConfigureAwait(false);
+
+                #region bitmap indexes are not supported by Hazelcast SQL
+                //// Create a bitmap index on the StudentId attribute
+                //await map.AddIndexAsync(IndexType.Bitmap, "StudentId").ConfigureAwait(false);
+
+                //// Create a bitmap index on the SubjectId attribute
+                //await map.AddIndexAsync(IndexType.Bitmap, "SubjectId").ConfigureAwait(false);
+
+                //// Create a bitmap index on the ExamId attribute
+                //await map.AddIndexAsync(IndexType.Bitmap, "ExamId").ConfigureAwait(false);
+                #endregion
+
+                // Create a hash index on the StudentId attribute
+                await map.AddIndexAsync(IndexType.Hashed, "StudentId").ConfigureAwait(false);
+
+                // Create a hash index on the SubjectId attribute
+                await map.AddIndexAsync(IndexType.Hashed, "SubjectId").ConfigureAwait(false);
+
+                // Create a hash index on the ExamId attribute
+                await map.AddIndexAsync(IndexType.Hashed, "ExamId").ConfigureAwait(false);
 
                 await client.Sql.ExecuteCommandAsync($@"
 CREATE OR REPLACE MAPPING 
