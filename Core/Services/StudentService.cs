@@ -6,7 +6,7 @@ using Repositories;
 
 namespace Services
 {
-    public interface IStudentService : IStudentQueryService
+    public interface IStudentService : IStudentQueryServiceAsync
     {
         Task SaveStudentListAsync(List<Student> studentList, CancellationToken token = default);
         Task SaveSubjectListAsync(List<Subject> subjectList, CancellationToken token = default);

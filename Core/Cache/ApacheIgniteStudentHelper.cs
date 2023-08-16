@@ -197,7 +197,7 @@ internal sealed class IgniteStudentCacheHelper : IIgniteStudentCacheHelper
         }
     }
 
-    public async Task<IEnumerable<StudentPerformanceDto>> LoadHighPerformingStudentsByAverageMarkAsync(int topCount = 1, CancellationToken token = default)
+    public IEnumerable<StudentPerformanceDto> LoadHighPerformingStudentsByAverageMark(int topCount = 1)
     {
         try
         {
@@ -228,7 +228,7 @@ OFFSET 0 ROWS FETCH NEXT {topCount} ROWS ONLY
         }
     }
 
-    public async Task<IEnumerable<StudentPerformanceDto>> LoadLowPerformingStudentsByAverageMarkAsync(int bottomCount = 1, CancellationToken token = default)
+    public IEnumerable<StudentPerformanceDto> LoadLowPerformingStudentsByAverageMark(int bottomCount = 1)
     {
         try
         {
@@ -259,7 +259,7 @@ OFFSET 0 ROWS FETCH NEXT {bottomCount} ROWS ONLY
         }
     }
 
-    public async Task<IEnumerable<StudentExamMarksDto>> LoadStudentsWithHighestMarksAsync(int numberOfStudents = 1, CancellationToken token = default)
+    public IEnumerable<StudentExamMarksDto> LoadStudentsWithHighestMarks(int numberOfStudents = 1)
     {
         try
         {
@@ -303,7 +303,7 @@ LIMIT {numberOfStudents}
         }
     }
 
-    public async Task<IEnumerable<StudentExamMarksDto>> LoadStudentsWithLowestMarksAsync(int numberOfStudents = 1, CancellationToken token = default)
+    public IEnumerable<StudentExamMarksDto> LoadStudentsWithLowestMarks(int numberOfStudents = 1)
     {
         try
         {
@@ -346,7 +346,7 @@ ORDER BY m.TotalMarks ASC LIMIT {numberOfStudents}
         }
     }
 
-    public async Task<IEnumerable<StudentSubjectMarksDto>> LoadSubjectWiseHighestMarksAndExamCountAsync(CancellationToken token = default)
+    public IEnumerable<StudentSubjectMarksDto> LoadSubjectWiseHighestMarksAndExamCount()
     {
         try
         {
@@ -377,7 +377,7 @@ ORDER BY s.Name, sub.Name
         }
     }
 
-    public async Task<IEnumerable<StudentSubjectMarksDto>> LoadTopPerformingStudentsBySubjectAsync(CancellationToken token = default)
+    public IEnumerable<StudentSubjectMarksDto> LoadTopPerformingStudentsBySubject()
     {
         try
         {
@@ -409,7 +409,7 @@ HAVING MAX(m.MarkValue) = 100
         }
     }
 
-    public async Task<IEnumerable<StudentPerformanceDto>> LoadTopStudentsByAverageMarkAsync(int topCount = 1, CancellationToken token = default)
+    public IEnumerable<StudentPerformanceDto> LoadTopStudentsByAverageMark(int topCount = 1)
     {
         try
         {
