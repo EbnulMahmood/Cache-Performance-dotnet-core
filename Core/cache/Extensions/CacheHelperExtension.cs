@@ -9,6 +9,7 @@ namespace Cache.Extensions
         {
             services.AddSingleton<IHazelcastStudentHelper, HazelcastStudentHelper>(_ => new HazelcastStudentHelper(hazelcastOptions));
             services.AddSingleton<ICouchbaseStudentHelper, CouchbaseStudentHelper>();
+            services.AddSingleton<ISingleStoreHelper, SingleStoreHelper>();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Model
     internal sealed class DapperDataAccess : IDapperDataAccess
     {
         private readonly IConfiguration _config;
-        private const string _conntectionString = "CacheDbContext";
+        private const string _connectionString = "CacheDbContext";
         public DapperDataAccess(IConfiguration config)
         {
             _config = config;
@@ -24,7 +24,7 @@ namespace Model
         {
             try
             {
-                using IDbConnection connection = new SqlConnection(_config.GetConnectionString(_conntectionString));
+                using IDbConnection connection = new SqlConnection(_config.GetConnectionString(_connectionString));
 
                 return await connection.QueryFirstOrDefaultAsync<TEntity>(sql, parameters, commandType: commandType);
             }
@@ -39,7 +39,7 @@ namespace Model
         {
             try
             {
-                using IDbConnection connection = new SqlConnection(_config.GetConnectionString(_conntectionString));
+                using IDbConnection connection = new SqlConnection(_config.GetConnectionString(_connectionString));
 
                 return await connection.QueryAsync<TEntity>(sql, parameters, commandType: commandType);
             }

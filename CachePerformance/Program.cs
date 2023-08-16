@@ -22,7 +22,6 @@ var hazelcastOptions = builder.Configuration.GetSection("hazelcast").Get<Hazelca
 
 builder.Services.AddCacheService(hazelcastOptions);
 
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
