@@ -22,7 +22,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Cache
 {
-    public interface ISingleStoreHelper 
+    public interface ISingleStoreHelper
     {
         Task<int> CacheSubjectListAsync(IEnumerable<Subject> subjectList, CancellationToken token = default);
         Task<int> CacheStudentListAsync(IEnumerable<Student> studentList, CancellationToken token = default);
@@ -84,7 +84,7 @@ namespace Cache
 
         public async Task<int> CacheMarkListAsync(IEnumerable<Mark> markList, CancellationToken token = default)
         {
-            var markLists =  markList.ToList();    
+            var markLists = markList.ToList();
             string[] batch = new string[batchSize];
             string table = "Marks";
             int totalRows = 0;
@@ -94,7 +94,7 @@ namespace Cache
                 {
                     int i = 0;
                     int value = j * batchSize;
-                    for (int k = 0; k< batchSize; k++)
+                    for (int k = 0; k < batchSize; k++)
                     {
                         batch[i] = $"({markLists[value].Id}, {markLists[value].MarkValue}, {markLists[value].Student?.Id}, {markLists[value].Subject?.Id}, {markLists[value].Exam?.Id}, '{markLists[value].CreatedAt.DateTime.ToString("yyyy-MM-dd 00:00:00")}', '{markLists[value].ModifiedAt.DateTime.ToString("yyyy-MM-dd 00:00:00")}')";
                         i++;
@@ -110,7 +110,7 @@ namespace Cache
                         using (var dbCommand = con.CreateCommand())
                         {
                             dbCommand.CommandText = insertCommand;
-                            totalRows+= await dbCommand.ExecuteNonQueryAsync();
+                            totalRows += await dbCommand.ExecuteNonQueryAsync();
                         }
                     }
                 }
@@ -390,9 +390,9 @@ ORDER BY s.Name, sub.Name
                     }
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
-                throw;    
+                throw;
             }
         }
 
@@ -475,7 +475,7 @@ LIMIT {topCount}
         {
             return _configuration.GetValue<string>("SingleStore:ConnectionString");
         }
-        public static List<T> DataReaderMapToList<T>(SingleStoreDataReader dr)
+        private List<T> DataReaderMapToList<T>(SingleStoreDataReader dr)
         {
             List<T> list = new List<T>();
             T obj = default(T);

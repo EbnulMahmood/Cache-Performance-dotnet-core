@@ -51,7 +51,6 @@ ORDER BY s.Name, sub.Name";
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
