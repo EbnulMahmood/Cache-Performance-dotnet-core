@@ -18,18 +18,105 @@ namespace CachePerformance.Controllers
             _couchbaseStudentHelper = couchbaseStudentHelper;
         }
 
+
         [HttpGet]
-        [Route("/couchbase/cache/students-with-highest-marks/{numberOfStudent}:int")]
-        public async Task<IActionResult> LoadStudentsWithHighestMarks(int numberOfStudent = 1)
+        [Route("/couchbase/cache/subject-wise-highest-marks/and-exam-count")]
+        public async Task<IActionResult> LoadSubjectWiseHighestMarksAndExamCount(CancellationToken token = default)
         {
             try
             {
-                var studentSubjectMarks = await _couchbaseStudentHelper.LoadStudentsWithHighestMarksAsync(numberOfStudent).ConfigureAwait(false);
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var studentSubjectMarks = await _couchbaseStudentHelper.LoadSubjectWiseHighestMarksAndExamCountAsync(token).ConfigureAwait(false);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                return Ok($"{count} Records Load Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+
+        //[HttpGet]
+        //[Route("/couchbase/cache/students-with-highest-marks/{numberOfStudent}:int")]
+        //public async Task<IActionResult> LoadStudentsWithHighestMarks(int numberOfStudent = 1)
+        //{
+        //    try
+        //    {
+        //        var studentSubjectMarks = await _couchbaseStudentHelper.LoadStudentsWithHighestMarksAsync(numberOfStudent).ConfigureAwait(false);
+        //        return Ok(studentSubjectMarks);
+        //    }
+        //    catch (Exception)
+        //    {
+
+        //        throw;
+        //    }
+        //}
+
+        [HttpGet]
+        [Route("/couchbase/cache/top-performing-students/by-subject")]
+        public async Task<IActionResult> LoadTopPerformingStudentsBySubject()
+        {
+            try
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var studentSubjectMarks = await _couchbaseStudentHelper.LoadTopPerformingStudentsBySubjectAsync();
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                return Ok($"{count} Records Load Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        [HttpGet]
+        [Route("/couchbase/cache/top-students-by-average-mark/{numberOfStudent}:int")]
+        public async Task<IActionResult> LoadTopStudentsByAverageMark(int numberOfStudent = 1)
+        {
+            try
+            {
+                var studentSubjectMarks = await _couchbaseStudentHelper.LoadTopStudentsByAverageMarkAsync(numberOfStudent);
                 return Ok(studentSubjectMarks);
             }
             catch (Exception)
             {
 
+                throw;
+            }
+        }
+
+        [HttpGet]
+        [Route("/couchbase/cache/low-performing-students/by-average-mark/{numberOfStudent}:int")]
+        public async Task<IActionResult> LoadLowPerformingStudentsByAverageMark(int numberOfStudent = 1)
+        {
+            try
+            {
+                var studentSubjectMarks = await _couchbaseStudentHelper.LoadLowPerformingStudentsByAverageMarkAsync(numberOfStudent);
+                return Ok(studentSubjectMarks);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        [HttpGet]
+        [Route("/couchbase/cache/high-performing-students/by-average-mark/{numberOfStudent}:int")]
+        public async Task<IActionResult> LoadHighPerformingStudentsByAverageMark(int numberOfStudent = 1)
+        {
+            try
+            {
+                var studentSubjectMarks = await _couchbaseStudentHelper.LoadHighPerformingStudentsByAverageMarkAsync(numberOfStudent);
+                return Ok(studentSubjectMarks);
+            }
+            catch (Exception)
+            {
                 throw;
             }
         }

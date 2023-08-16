@@ -1,5 +1,4 @@
-﻿using CachePerformance.Helpers;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Services;
 
 namespace CachePerformance.Controllers
@@ -132,30 +131,30 @@ namespace CachePerformance.Controllers
         }
 
         #region Seed Data
-        [HttpPost]
-        [Route("/data/seed-students")]
-        public async Task<IActionResult> SeedData(CancellationToken token = default)
-        {
-            try
-            {
-                var watch = System.Diagnostics.Stopwatch.StartNew();
+        //[HttpPost]
+        //[Route("/data/seed-students")]
+        //public async Task<IActionResult> SeedData(CancellationToken token = default)
+        //{
+        //    try
+        //    {
+        //        var watch = System.Diagnostics.Stopwatch.StartNew();
 
-                var (entitiesStudent, entitiesSubject, entitiesExam, entitiesMark) = _studentService.GenerateData(Constants.Zero, Constants.OneHundredThousand);
+        //        var (entitiesStudent, entitiesSubject, entitiesExam, entitiesMark) = _studentService.GenerateData(Constants.Zero, Constants.OneHundredThousand);
 
-                await _studentService.SaveStudentListAsync(entitiesStudent, token);
-                await _studentService.SaveSubjectListAsync(entitiesSubject, token);
-                await _studentService.SaveExamListAsync(entitiesExam, token);
-                await _studentService.SaveMarkListAsync(entitiesMark, token);
+        //        await _studentService.SaveStudentListAsync(entitiesStudent, token);
+        //        await _studentService.SaveSubjectListAsync(entitiesSubject, token);
+        //        await _studentService.SaveExamListAsync(entitiesExam, token);
+        //        await _studentService.SaveMarkListAsync(entitiesMark, token);
 
-                watch.Stop();
-                return Ok($"Records Save Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
-            }
-            catch (Exception)
-            {
+        //        watch.Stop();
+        //        return Ok($"Records Save Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
+        //    }
+        //    catch (Exception)
+        //    {
 
-                throw;
-            }
-        }
+        //        throw;
+        //    }
+        //}
         #endregion
     }
 }
