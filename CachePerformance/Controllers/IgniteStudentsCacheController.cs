@@ -1,6 +1,8 @@
 ﻿using Cache;
+using CachePerformance.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Services;
+using System.Diagnostics;
 
 namespace CachePerformance.Controllers
 {
@@ -25,12 +27,12 @@ namespace CachePerformance.Controllers
         {
             try
             {
-                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _igniteStudentCacheHelper.LoadSubjectWiseHighestMarksAndExamCountAsync(token);
                 var count = studentSubjectMarks.Count();
                 watch.Stop();
 
-                return Ok($"{count} Records Load Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
+                return Ok(Constants.GetTime(count, watch));
             }
             catch (Exception)
             {
@@ -45,8 +47,12 @@ namespace CachePerformance.Controllers
         {
             try
             {
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _igniteStudentCacheHelper.LoadTopPerformingStudentsBySubjectAsync();
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                return Ok(Constants.GetTime(count, watch));
             }
             catch (Exception)
             {
@@ -56,13 +62,24 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/ignite/cache/top-students-by-average-mark/{numberOfStudent}:int")]
-        public async Task<IActionResult> LoadTopStudentsByAverageMark(int numberOfStudent = 1)
+        [Route("/ignite/cache/top-students-by-average-mark/{numberOfStudent}/{showTime}")]
+        public async Task<IActionResult> LoadTopStudentsByAverageMark(int numberOfStudent = 1, bool showTime = true)
         {
             try
             {
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _igniteStudentCacheHelper.LoadTopStudentsByAverageMarkAsync(numberOfStudent);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                if (showTime)
+                {
+                    return Ok(Constants.GetTime(count, watch));
+                }
+                else
+                {
+                    return Ok(studentSubjectMarks);
+                }
             }
             catch (Exception)
             {
@@ -72,13 +89,24 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/ignite/cache/low-performing-students/by-average-mark/{numberOfStudent}:int")]
-        public async Task<IActionResult> LoadLowPerformingStudentsByAverageMark(int numberOfStudent = 1)
+        [Route("/ignite/cache/low-performing-students/by-average-mark/{numberOfStudent}/{showTime}")]
+        public async Task<IActionResult> LoadLowPerformingStudentsByAverageMark(int numberOfStudent = 1, bool showTime = true)
         {
             try
             {
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _igniteStudentCacheHelper.LoadLowPerformingStudentsByAverageMarkAsync(numberOfStudent);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                if (showTime)
+                {
+                    return Ok(Constants.GetTime(count, watch));
+                }
+                else
+                {
+                    return Ok(studentSubjectMarks);
+                }
             }
             catch (Exception)
             {
@@ -88,13 +116,24 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/ignite/cache/high-performing-students/by-average-mark/{numberOfStudent}:int")]
-        public async Task<IActionResult> LoadHighPerformingStudentsByAverageMark(int numberOfStudent = 1)
+        [Route("/ignite/cache/high-performing-students/by-average-mark/{numberOfStudent}/{showTime}")]
+        public async Task<IActionResult> LoadHighPerformingStudentsByAverageMark(int numberOfStudent = 1, bool showTime = true)
         {
             try
             {
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _igniteStudentCacheHelper.LoadHighPerformingStudentsByAverageMarkAsync(numberOfStudent);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                if (showTime)
+                {
+                    return Ok(Constants.GetTime(count, watch));
+                }
+                else
+                {
+                    return Ok(studentSubjectMarks);
+                }
             }
             catch (Exception)
             {
@@ -104,13 +143,24 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/ignite/cache/students-with-lowest-marks/{numberOfStudent}:int")]
-        public async Task<IActionResult> LoadStudentsWithLowestMarks(int numberOfStudent = 1)
+        [Route("/ignite/cache/students-with-lowest-marks/{numberOfStudent}/{showTime}")]
+        public async Task<IActionResult> LoadStudentsWithLowestMarks(int numberOfStudent = 1, bool showTime = true)
         {
             try
             {
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _igniteStudentCacheHelper.LoadStudentsWithLowestMarksAsync(numberOfStudent);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                if (showTime)
+                {
+                    return Ok(Constants.GetTime(count, watch));
+                }
+                else
+                {
+                    return Ok(studentSubjectMarks);
+                }
             }
             catch (Exception)
             {
@@ -120,13 +170,24 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/ignite/cache/students-with-highest-marks/{numberOfStudent}:int")]
-        public async Task<IActionResult> LoadStudentsWithHighestMarks(int numberOfStudent = 1)
+        [Route("/ignite/cache/students-with-highest-marks/{numberOfStudent}/{showTime}")]
+        public async Task<IActionResult> LoadStudentsWithHighestMarks(int numberOfStudent = 1, bool showTime = true)
         {
             try
             {
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _igniteStudentCacheHelper.LoadStudentsWithHighestMarksAsync(numberOfStudent);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                if (showTime)
+                {
+                    return Ok(Constants.GetTime(count, watch));
+                }
+                else
+                {
+                    return Ok(studentSubjectMarks);
+                }
             }
             catch (Exception)
             {
@@ -142,13 +203,14 @@ namespace CachePerformance.Controllers
         {
             try
             {
-                var watch = System.Diagnostics.Stopwatch.StartNew();
 
                 var entitiesSubject = await _studentService.LoadSubjectListAsync(token);
                 var entitiesExam = await _studentService.LoadExamListAsync(token);
                 var entitiesStudent = await _studentService.LoadStudentListAsync(token);
                 var entitiesMark = await _studentService.LoadMarkListAsync(token);
 
+                var watch = Stopwatch.StartNew();
+                
                 int subjectCount = await _igniteStudentCacheHelper.CacheSubjectListAsync(entitiesSubject, token).ConfigureAwait(false);
                 int examCount = await _igniteStudentCacheHelper.CacheExamListAsync(entitiesExam, token).ConfigureAwait(false);
                 int studentCount = await _igniteStudentCacheHelper.CacheStudentListAsync(entitiesStudent, token).ConfigureAwait(false);

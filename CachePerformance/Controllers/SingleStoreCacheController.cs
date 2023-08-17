@@ -1,6 +1,8 @@
 ﻿using Cache;
+using CachePerformance.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Services;
+using System.Diagnostics;
 
 namespace CachePerformance.Controllers
 {
@@ -22,11 +24,12 @@ namespace CachePerformance.Controllers
         {
             try
             {
-                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _singleStoreHelper.LoadSubjectWiseHighestMarksAndExamCountAsync(token).ConfigureAwait(false);
                 var count = studentSubjectMarks.Count;
                 watch.Stop();
-                return Ok($"{count} Records Load Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
+                
+                return Ok(Constants.GetTime(count, watch));
             }
             catch (Exception)
             {
@@ -40,12 +43,12 @@ namespace CachePerformance.Controllers
         {
             try
             {
-                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _singleStoreHelper.LoadTopPerformingStudentsBySubjectAsync().ConfigureAwait(false);
                 var count = studentSubjectMarks.Count;
                 watch.Stop();
-                return Ok($"{count} Records Load Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
-                //return Ok(studentSubjectMarks);
+
+                return Ok(Constants.GetTime(count, watch));
             }
             catch (Exception)
             {
@@ -54,13 +57,24 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/SingleStore/cache/top-students-by-average-mark/{numberOfStudent}:int")]
-        public async Task<IActionResult> LoadTopStudentsByAverageMark(int numberOfStudent = 1)
+        [Route("/SingleStore/cache/top-students-by-average-mark/{numberOfStudent}/{showTime}")]
+        public async Task<IActionResult> LoadTopStudentsByAverageMark(int numberOfStudent = 1, bool showTime = true)
         {
             try
             {
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _singleStoreHelper.LoadTopStudentsByAverageMarkAsync(numberOfStudent).ConfigureAwait(false);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                if (showTime)
+                {
+                    return Ok(Constants.GetTime(count, watch));
+                }
+                else
+                {
+                    return Ok(studentSubjectMarks);
+                }
             }
             catch (Exception)
             {
@@ -69,13 +83,24 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/SingleStore/cache/low-performing-students/by-average-mark/{numberOfStudent}:int")]
-        public async Task<IActionResult> LoadLowPerformingStudentsByAverageMark(int numberOfStudent = 1)
+        [Route("/SingleStore/cache/low-performing-students/by-average-mark/{numberOfStudent}/{showTime}")]
+        public async Task<IActionResult> LoadLowPerformingStudentsByAverageMark(int numberOfStudent = 1, bool showTime = true)
         {
             try
             {
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _singleStoreHelper.LoadLowPerformingStudentsByAverageMarkAsync(numberOfStudent).ConfigureAwait(false);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                if (showTime)
+                {
+                    return Ok(Constants.GetTime(count, watch));
+                }
+                else
+                {
+                    return Ok(studentSubjectMarks);
+                }
             }
             catch (Exception)
             {
@@ -84,13 +109,24 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/SingleStore/cache/high-performing-students/by-average-mark/{numberOfStudent}:int")]
-        public async Task<IActionResult> LoadHighPerformingStudentsByAverageMark(int numberOfStudent = 1)
+        [Route("/SingleStore/cache/high-performing-students/by-average-mark/{numberOfStudent}/{showTime}")]
+        public async Task<IActionResult> LoadHighPerformingStudentsByAverageMark(int numberOfStudent = 1, bool showTime = true)
         {
             try
             {
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _singleStoreHelper.LoadHighPerformingStudentsByAverageMarkAsync(numberOfStudent).ConfigureAwait(false);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                if (showTime)
+                {
+                    return Ok(Constants.GetTime(count, watch));
+                }
+                else
+                {
+                    return Ok(studentSubjectMarks);
+                }
             }
             catch (Exception)
             {
@@ -99,13 +135,24 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/SingleStore/cache/students-with-lowest-marks/{numberOfStudent}:int")]
-        public async Task<IActionResult> LoadStudentsWithLowestMarks(int numberOfStudent = 1)
+        [Route("/SingleStore/cache/students-with-lowest-marks/{numberOfStudent}/{showTime}")]
+        public async Task<IActionResult> LoadStudentsWithLowestMarks(int numberOfStudent = 1, bool showTime = true)
         {
             try
             {
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _singleStoreHelper.LoadStudentsWithLowestMarksAsync(numberOfStudent).ConfigureAwait(false);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                if (showTime)
+                {
+                    return Ok(Constants.GetTime(count, watch));
+                }
+                else
+                {
+                    return Ok(studentSubjectMarks);
+                }
             }
             catch (Exception)
             {
@@ -114,13 +161,24 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/SingleStore/cache/students-with-highest-marks/{numberOfStudent}:int")]
-        public async Task<IActionResult> LoadStudentsWithHighestMarks(int numberOfStudent = 1)
+        [Route("/SingleStore/cache/students-with-highest-marks/{numberOfStudent}/{showTime}")]
+        public async Task<IActionResult> LoadStudentsWithHighestMarks(int numberOfStudent = 1, bool showTime = true)
         {
             try
             {
+                var watch = Stopwatch.StartNew();
                 var studentSubjectMarks = await _singleStoreHelper.LoadStudentsWithHighestMarksAsync(numberOfStudent).ConfigureAwait(false);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count();
+                watch.Stop();
+
+                if (showTime)
+                {
+                    return Ok(Constants.GetTime(count, watch));
+                }
+                else
+                {
+                    return Ok(studentSubjectMarks);
+                }
             }
             catch (Exception)
             {
@@ -136,12 +194,12 @@ namespace CachePerformance.Controllers
         {
             try
             {
-                var watch = System.Diagnostics.Stopwatch.StartNew();
-
                 var entitiesSubject = await _studentService.LoadSubjectListAsync(token);
                 var entitiesExam = await _studentService.LoadExamListAsync(token);
                 var entitiesStudent = await _studentService.LoadStudentListAsync(token);
                 var entitiesMark = await _studentService.LoadMarkListAsync(token);
+
+                var watch = Stopwatch.StartNew();
 
                 int subjectCount =  await _singleStoreHelper.CacheSubjectListAsync(entitiesSubject, token);
                 int examCount = await _singleStoreHelper.CacheExamListAsync(entitiesExam, token).ConfigureAwait(false);
@@ -152,8 +210,9 @@ namespace CachePerformance.Controllers
                 return Ok($"{subjectCount + examCount + studentCount + markCount} Records Load and Save Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+
                 throw;
             }
         }
