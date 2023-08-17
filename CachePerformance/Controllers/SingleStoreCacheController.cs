@@ -59,8 +59,12 @@ namespace CachePerformance.Controllers
         {
             try
             {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
                 var studentSubjectMarks = await _singleStoreHelper.LoadTopStudentsByAverageMarkAsync(numberOfStudent).ConfigureAwait(false);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count;
+                watch.Stop();
+                return Ok($"{count} Records Load Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
+                //return Ok(studentSubjectMarks);
             }
             catch (Exception)
             {
@@ -74,8 +78,12 @@ namespace CachePerformance.Controllers
         {
             try
             {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
                 var studentSubjectMarks = await _singleStoreHelper.LoadLowPerformingStudentsByAverageMarkAsync(numberOfStudent).ConfigureAwait(false);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count;
+                watch.Stop();
+                return Ok($"{count} Records Load Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
+                //return Ok(studentSubjectMarks);
             }
             catch (Exception)
             {
@@ -89,8 +97,12 @@ namespace CachePerformance.Controllers
         {
             try
             {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
                 var studentSubjectMarks = await _singleStoreHelper.LoadHighPerformingStudentsByAverageMarkAsync(numberOfStudent).ConfigureAwait(false);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count;
+                watch.Stop();
+                return Ok($"{count} Records Load Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
+              //return Ok(studentSubjectMarks);
             }
             catch (Exception)
             {
@@ -104,8 +116,12 @@ namespace CachePerformance.Controllers
         {
             try
             {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
                 var studentSubjectMarks = await _singleStoreHelper.LoadStudentsWithLowestMarksAsync(numberOfStudent).ConfigureAwait(false);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count;
+                watch.Stop();
+                return Ok($"{count} Records Load Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
+             // return Ok(studentSubjectMarks);
             }
             catch (Exception)
             {
@@ -119,8 +135,12 @@ namespace CachePerformance.Controllers
         {
             try
             {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
                 var studentSubjectMarks = await _singleStoreHelper.LoadStudentsWithHighestMarksAsync(numberOfStudent).ConfigureAwait(false);
-                return Ok(studentSubjectMarks);
+                var count = studentSubjectMarks.Count;
+                watch.Stop();
+                return Ok($"{count} Records Load Time: {watch.ElapsedMilliseconds} milliseconds, {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalSeconds} seconds and {TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds).TotalMinutes} minutes");
+                //return Ok(studentSubjectMarks);
             }
             catch (Exception)
             {
