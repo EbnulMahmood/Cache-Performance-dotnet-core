@@ -196,6 +196,35 @@ namespace CachePerformance.Controllers
                 throw;
             }
         }
+        [HttpPost]
+        [Route("/couchbaseV2/cache/seed-students")]
+        public async Task<IActionResult> SeedDataV2(CancellationToken token = default)
+        {
+            try
+            {
+                var watch = Stopwatch.StartNew();
+
+                var entitiesSubject = await _studentService.LoadSubjectListAsync(token);
+                var entitiesExam = await _studentService.LoadExamListAsync(token);
+                var entitiesStudent = await _studentService.LoadStudentListAsync(token);
+                var entitiesMark = await _studentService.LoadMarkListAsync(token);
+
+                int markCount = await _couchbaseStudentHelper.CacheMarkListV2Async(entitiesMark, entitiesStudent, entitiesSubject, entitiesExam, token).ConfigureAwait(false);
+
+
+
+                return Ok();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
+
+
+
         #endregion
     }
 }

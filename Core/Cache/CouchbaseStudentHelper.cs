@@ -15,13 +15,15 @@ namespace Cache
         Task<int> CacheSubjectListAsync(IEnumerable<Subject> subjectList, CancellationToken token = default);
         Task<int> CacheExamListAsync(IEnumerable<Exam> examList, CancellationToken token = default);
         Task<int> CacheMarkListAsync(IEnumerable<Mark> markList, CancellationToken token = default);
+        Task<int> CacheMarkListV2Async(IEnumerable<Mark> markList, IEnumerable<Student> studentList, IEnumerable<Subject> subjectList, IEnumerable<Exam> examList, CancellationToken token = default);
     }
 
     internal sealed class CouchbaseStudentHelper : ICouchbaseStudentHelper
     {
         private readonly IBucketProvider _bucketProvider;
-        private const string _bucketName = "Academy";
-        private const string _scopeName = "AcademyScope";
+        private const string _bucketName = "School";
+        private const string _scopeName = "SchoolScope";
+        private const string _scopeNameV2 = "SchoolScopeV2";
 
         private const string _collectionStudent = "Students";
         private const string _collectionSubject = "Subjects";
@@ -50,9 +52,9 @@ MAX(sub.name) AS SubjectName,
 --ARRAY_LENGTH(ARRAY_AGG (DISTINCT m.examId)) AS ExamCount,
 --ARRAY_LENGTH(ARRAY_AGG (DISTINCT m.examId)) AS ExamCount,
 MAX(m.markValue) AS HighestMark
-FROM Academy.AcademyScope.Marks AS m
-JOIN Academy.AcademyScope.Students AS s ON META(s).id = m.studentId
-JOIN Academy.AcademyScope.Subjects AS sub ON m.subjectId = META(sub).id
+FROM {_bucketName}.{_scopeName}.Marks AS m
+JOIN {_bucketName}.{_scopeName}.Students AS s ON META(s).id = m.studentId
+JOIN {_bucketName}.{_scopeName}.Subjects AS sub ON m.subjectId = META(sub).id
 GROUP BY s.id, sub.id
 --LIMIT 20
 ", options =>
@@ -77,10 +79,10 @@ GROUP BY s.id, sub.id
        MAX(sub.name) AS SubjectName,
        MAX(m.markValue) AS HighestMark,
        ARRAY_LENGTH(ARRAY_AGG(DISTINCT META(e).id)) AS ExamCount
-FROM Academy.AcademyScope.Marks AS m
-    JOIN Academy.AcademyScope.Students AS s ON META(s).id = m.studentId
-    JOIN Academy.AcademyScope.Subjects AS sub ON META(sub).id = m.subjectId
-    JOIN Academy.AcademyScope.Exams AS e ON META(e).id = m.examId
+FROM {_bucketName}.{_scopeName}.Marks AS m
+    JOIN {_bucketName}.{_scopeName}.Students AS s ON META(s).id = m.studentId
+    JOIN {_bucketName}.{_scopeName}.Subjects AS sub ON META(sub).id = m.subjectId
+    JOIN {_bucketName}.{_scopeName}.Exams AS e ON META(e).id = m.examId
 GROUP BY s.id
 ", options =>
                 {
@@ -104,9 +106,9 @@ GROUP BY s.id
 MAX(s.name) AS StudentName
 ,ROUND(AVG(m.markValue), 2) AS AverageMark
 ,COUNT(DISTINCT e.id) AS ExamCount
-FROM Academy.AcademyScope.Marks AS m
-JOIN Academy.AcademyScope.Students AS s ON META(s).id = m.studentId
-JOIN Academy.AcademyScope.Exams AS e ON META(e).id = m.examId
+FROM {_bucketName}.{_scopeName}.Marks AS m
+JOIN {_bucketName}.{_scopeName}.Students AS s ON META(s).id = m.studentId
+JOIN {_bucketName}.{_scopeName}.Exams AS e ON META(e).id = m.examId
 GROUP BY s.id
 ORDER BY AverageMark DESC
 LIMIT {topCount}", options =>
@@ -131,9 +133,9 @@ LIMIT {topCount}", options =>
 MAX(s.name) AS StudentName
 ,ROUND(AVG(m.markValue), 2) AS AverageMark
 ,COUNT(DISTINCT e.id) AS ExamCount
-FROM Academy.AcademyScope.Marks AS m
-JOIN Academy.AcademyScope.Students AS s ON META(s).id = m.studentId
-JOIN Academy.AcademyScope.Exams AS e ON META(e).id = m.examId
+FROM {_bucketName}.{_scopeName}.Marks AS m
+JOIN {_bucketName}.{_scopeName}.Students AS s ON META(s).id = m.studentId
+JOIN {_bucketName}.{_scopeName}.Exams AS e ON META(e).id = m.examId
 GROUP BY s.id
 ORDER BY AverageMark ASC
 LIMIT {bottomCount}", options =>
@@ -158,9 +160,9 @@ LIMIT {bottomCount}", options =>
 MAX(s.name) AS StudentName
 ,ROUND(AVG(m.markValue), 2) AS AverageMark
 ,COUNT(DISTINCT e.id) AS ExamCount
-FROM Academy.AcademyScope.Marks AS m
-JOIN Academy.AcademyScope.Students AS s ON META(s).id = m.studentId
-JOIN Academy.AcademyScope.Exams AS e ON META(e).id = m.examId
+FROM {_bucketName}.{_scopeName}.Marks AS m
+JOIN {_bucketName}.{_scopeName}.Students AS s ON META(s).id = m.studentId
+JOIN {_bucketName}.{_scopeName}.Exams AS e ON META(e).id = m.examId
 GROUP BY s.id
 ORDER BY AverageMark DESC
 LIMIT {topCount}", options =>
@@ -362,5 +364,37 @@ LIMIT {topCount}", options =>
                 throw;
             }
         }
+
+        public async Task<int> CacheMarkListV2Async(IEnumerable<Mark> markList, IEnumerable<Student> studentList, IEnumerable<Subject> subjectList, IEnumerable<Exam> examList, CancellationToken token = default)
+        {
+            var bucket = await _bucketProvider.GetBucketAsync(_bucketName).ConfigureAwait(false);
+            var scope = await bucket.ScopeAsync(_scopeNameV2).ConfigureAwait(false);
+            var collectionMarks = await scope.CollectionAsync(_collectionMark).ConfigureAwait(false);
+
+            var marksObjects = new List<Object>();
+
+            foreach (var mark in markList)
+            {
+                var student = studentList.Where(x => x.Id == mark.Student?.Id).FirstOrDefault();
+                var subject = subjectList.Where(x => x.Id == mark.Subject?.Id).FirstOrDefault();
+                var exam = examList.Where(x => x.Id == mark.Exam?.Id).FirstOrDefault();
+                await collectionMarks.InsertAsync(mark.Id.ToString(), new
+                {
+                    markId = mark.Id,
+                    markValue = mark.MarkValue,
+                    createdDate = mark.CreatedAt,
+                    modifiedDate = mark.ModifiedAt,
+                    student = student,
+                    subject = subject,
+                    exam = exam,
+                });
+            }
+            return 0;
+        }
+
+
+
+
+
     }
 }
