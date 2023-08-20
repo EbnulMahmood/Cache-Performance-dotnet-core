@@ -5,7 +5,7 @@ services:
     ports:
       - "5701:5701"
     mem_limit: 8g
-    cpus: 10.0
+    cpus: 4.0
     restart: always
   management-center:
     image: hazelcast/management-center:5.3.0
