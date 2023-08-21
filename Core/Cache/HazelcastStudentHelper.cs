@@ -1,9 +1,13 @@
-﻿using Common;
+﻿using Cache.ApacheIgnite;
+using Cache.Hazelcast.Portable;
+using Common;
 using Common.Dto;
 using Hazelcast;
 using Hazelcast.Core;
 using Hazelcast.Models;
+using Hazelcast.Query;
 using Model;
+using Newtonsoft.Json.Linq;
 using System.Text.Json;
 
 namespace Cache
@@ -562,6 +566,31 @@ TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellati
                 await client.DisposeAsync().ConfigureAwait(false);
 
                 return count;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<Customer> CacheCustomerAsync(CancellationToken token = default)
+        {
+            try
+            {
+                await using var client = await HazelcastClientFactory.StartNewClientAsync(_options, cancellationToken: token).ConfigureAwait(false);
+                var map = await client.GetMapAsync<int, Customer>("customer").ConfigureAwait(false);
+
+                var customer = new Customer { Name = "Alice", Id = 42, LastOrder = DateTime.Now };
+                await map.SetAsync(customer.Id, customer).ConfigureAwait(false);
+
+                var criteriaQuery = Predicates.And(
+                    Predicates.Like("name", "Alice")
+                );
+
+                var result = await map.GetValuesAsync(criteriaQuery).ConfigureAwait(false);
+
+                return result.SingleOrDefault()!;
             }
             catch (Exception)
             {
