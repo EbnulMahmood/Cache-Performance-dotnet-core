@@ -22,7 +22,7 @@ var hazelcastOptions = builder.Configuration.GetSection("hazelcast").Get<Hazelca
 
 builder.Services.AddCacheService(hazelcastOptions);
 
-builder.Services.AddIgniteCacheService("192.168.3.86");
+builder.Services.AddIgniteCacheService("172.18.4.176");
 
 
 builder.Services.AddControllers();
