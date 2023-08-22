@@ -31,7 +31,7 @@ namespace Cache.Hazelcast.Portable
         public void ReadPortable(IPortableReader reader)
         {
             Id = reader.ReadLong("id");
-            MarkValue = reader.ReadLong("markValue");
+            MarkValue = reader.ReadDouble("markValue");
             PStudent = reader.ReadPortable<PStudent>("student");
             PSubject = reader.ReadPortable<PSubject>("subject");
             PExam = reader.ReadPortable<PExam>("exam");

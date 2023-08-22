@@ -2,6 +2,7 @@
 using Common;
 using Common.Dto;
 using Hazelcast;
+using Hazelcast.Query;
 using Model;
 
 namespace Cache
@@ -30,41 +31,37 @@ namespace Cache
             {
                 var studentSubjectMarksDtoList = new List<StudentSubjectMarksDto>();
 
-                await using var client = await HazelcastClientFactory.StartNewClientAsync(_options, cancellationToken: token).ConfigureAwait(false);
+                var hazelcastOptions = new HazelcastOptionsBuilder().Build();
 
-                await using var result = await client.Sql.ExecuteQueryAsync($@"
-                SELECT 
-                    s.Name AS StudentName,
-                    sub.Name AS SubjectName,
-                    MAX(m.MarkValue) AS HighestMark,
-                    CAST(COUNT(DISTINCT m.ExamId) AS int) AS ExamCount
-                FROM marksv3 m
-                JOIN studentsv3 s ON s.__key = m.StudentId
-                JOIN subjectsv3 sub ON sub.__key = m.SubjectId
-                GROUP BY s.__key, s.Name, sub.__key, sub.Name
-                ORDER BY s.Name, sub.Name", cancellationToken: token);
+                var factoryMark = new MarkPortableFactoryV3();
+                var factoryStudent = new StudentPortableFactory();
+                var factorySubject = new SubjectPortableFactory();
+                var factoryExam = new ExamPortableFactory();
 
-                studentSubjectMarksDtoList = await result.Select(row =>
-                    new StudentSubjectMarksDto
-                    {
-                        StudentName = row.GetColumn<string>("StudentName"),
-                        SubjectName = row.GetColumn<string>("SubjectName"),
-                        HighestMark = row.GetColumn<double>("HighestMark"),
-                        ExamCount = row.GetColumn<int>("ExamCount"),
-                    }).ToListAsync(token).ConfigureAwait(false);
+                hazelcastOptions.Serialization
+                    .AddPortableFactory(MarkPortableFactoryV3.FactoryId, factoryMark)
+                    .AddPortableFactory(StudentPortableFactory.FactoryId, factoryStudent)
+                    .AddPortableFactory(SubjectPortableFactory.FactoryId, factorySubject)
+                    .AddPortableFactory(ExamPortableFactory.FactoryId, factoryExam);
+                await using var client = await HazelcastClientFactory.StartNewClientAsync(hazelcastOptions, cancellationToken: token).ConfigureAwait(false);
+                var mapMark = await client.GetMapAsync<long, PMarkV3>(_mapMark).ConfigureAwait(false);
 
-                await foreach (var row in result)
-                {
-                    studentSubjectMarksDtoList.Add(
-                        new StudentSubjectMarksDto
-                        {
-                            StudentName = row.GetColumn<string>("StudentName"),
-                            SubjectName = row.GetColumn<string>("SubjectName"),
-                            HighestMark = row.GetColumn<double>("HighestMark"),
-                            ExamCount = row.GetColumn<int>("ExamCount"),
-                        }
-                    );
-                }
+
+                //var result1 = await mapMark.GetValuesAsync().ConfigureAwait(false);
+                //var res1 = result1.ToList();
+                //int count1 = res1.Count;
+
+                //var predicate1 = Predicates.Sql("markValue = 100");
+                //var result2 = await mapMark.GetValuesAsync(predicate1).ConfigureAwait(false);
+                //var res2 = result2.ToList();
+                //int count2 = res2.Count;
+
+
+                var predicate2 = Predicates.Sql("student.name = 'Ken Corkery'");
+
+                var result3 = await mapMark.GetValuesAsync(predicate2).ConfigureAwait(false);
+                var res3 = result3.ToList();
+                int count3 = res3.Count;
 
                 return studentSubjectMarksDtoList;
             }
