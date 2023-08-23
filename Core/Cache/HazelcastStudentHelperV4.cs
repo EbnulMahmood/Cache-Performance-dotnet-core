@@ -3,12 +3,13 @@ using Common.Dto;
 using Hazelcast;
 using Hazelcast.Core;
 using Hazelcast.Models;
+using Hazelcast.NearCaching;
 using Model;
 using System.Text.Json;
 
 namespace Cache
 {
-    public interface IHazelcastStudentHelper : IStudentQueryServiceAsync
+    public interface IHazelcastStudentHelperV4 : IStudentQueryServiceAsync
     {
         Task<int> CacheStudentListAsync(IEnumerable<Student> studentList, CancellationToken token = default);
         Task<int> CacheSubjectListAsync(IEnumerable<Subject> subjectList, CancellationToken token = default);
@@ -16,7 +17,7 @@ namespace Cache
         Task<int> CacheMarkListAsync(IEnumerable<Mark> markList, CancellationToken token = default);
     }
 
-    internal sealed class HazelcastStudentHelper : IHazelcastStudentHelper
+    internal sealed class HazelcastStudentHelperV4 : IHazelcastStudentHelperV4
     {
         private readonly HazelcastOptions _options;
         private const string _mapStudent = "students";
@@ -24,7 +25,7 @@ namespace Cache
         private const string _mapExam = "exams";
         private const string _mapMark = "marks";
 
-        public HazelcastStudentHelper(HazelcastOptions options)
+        public HazelcastStudentHelperV4(HazelcastOptions options)
         {
             _options = options;
         }
@@ -344,7 +345,27 @@ LIMIT ?", cancellationToken: token, parameters: numberOfStudents);
         {
             try
             {
+                _options.NearCaches[_mapStudent] = new NearCacheOptions
+                {
+                    MaxSize = 1000,
+                    InvalidateOnChange = true,
+                    EvictionPolicy = EvictionPolicy.Lru,
+                    InMemoryFormat = InMemoryFormat.Binary
+                };
+
                 await using var client = await HazelcastClientFactory.StartNewClientAsync(_options, cancellationToken: token).ConfigureAwait(false);
+
+                await client.Sql.ExecuteCommandAsync($@"
+                CREATE OR REPLACE MAPPING 
+                {_mapStudent} (
+                __key BIGINT,
+                Id BIGINT,
+                Name VARCHAR,
+                RollNumber VARCHAR,
+                CreatedAt TIMESTAMP WITH TIME ZONE,
+                ModifiedAt TIMESTAMP WITH TIME ZONE)
+                TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellationToken: token).ConfigureAwait(false);
+
                 await using var map = await client.GetMapAsync<long, HazelcastJsonValue>(_mapStudent).ConfigureAwait(false);
 
                 var studentsDictionary = new Dictionary<long, HazelcastJsonValue>();
@@ -367,17 +388,6 @@ LIMIT ?", cancellationToken: token, parameters: numberOfStudents);
                 // await map.AddIndexAsync(IndexType.Bitmap, "RollNumber").ConfigureAwait(false);
                 #endregion
 
-                await client.Sql.ExecuteCommandAsync($@"
-CREATE OR REPLACE MAPPING 
-{map.Name} (
-__key BIGINT,
-Id BIGINT,
-Name VARCHAR,
-RollNumber VARCHAR,
-CreatedAt TIMESTAMP WITH TIME ZONE,
-ModifiedAt TIMESTAMP WITH TIME ZONE)
-TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellationToken: token).ConfigureAwait(false);
-
                 await map.SetAllAsync(studentsDictionary).ConfigureAwait(false);
                 int count = await map.GetSizeAsync().ConfigureAwait(false);
 
@@ -397,7 +407,27 @@ TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellati
         {
             try
             {
+                _options.NearCaches[_mapSubject] = new NearCacheOptions
+                {
+                    MaxSize = 1000,
+                    InvalidateOnChange = true,
+                    EvictionPolicy = EvictionPolicy.Lru,
+                    InMemoryFormat = InMemoryFormat.Binary
+                };
+
                 await using var client = await HazelcastClientFactory.StartNewClientAsync(_options, cancellationToken: token).ConfigureAwait(false);
+
+                await client.Sql.ExecuteCommandAsync($@"
+                CREATE OR REPLACE MAPPING 
+                {_mapSubject} (
+                __key BIGINT,
+                Id BIGINT,
+                Name VARCHAR,
+                Description VARCHAR,
+                CreatedAt TIMESTAMP WITH TIME ZONE,
+                ModifiedAt TIMESTAMP WITH TIME ZONE)
+                TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellationToken: token).ConfigureAwait(false);
+
                 await using var map = await client.GetMapAsync<long, HazelcastJsonValue>(_mapSubject).ConfigureAwait(false);
 
                 var subjectsDictionary = new Dictionary<long, HazelcastJsonValue>();
@@ -414,17 +444,6 @@ TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellati
 
                 // Create a hash index on the Name attribute
                 await map.AddIndexAsync(IndexType.Hashed, "Name").ConfigureAwait(false);
-
-                await client.Sql.ExecuteCommandAsync($@"
-CREATE OR REPLACE MAPPING 
-{map.Name} (
-__key BIGINT,
-Id BIGINT,
-Name VARCHAR,
-Description VARCHAR,
-CreatedAt TIMESTAMP WITH TIME ZONE,
-ModifiedAt TIMESTAMP WITH TIME ZONE)
-TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellationToken: token).ConfigureAwait(false);
 
                 await map.SetAllAsync(subjectsDictionary).ConfigureAwait(false);
                 int count = await map.GetSizeAsync().ConfigureAwait(false);
@@ -446,7 +465,27 @@ TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellati
         {
             try
             {
+                _options.NearCaches[_mapExam] = new NearCacheOptions
+                {
+                    MaxSize = 1000,
+                    InvalidateOnChange = true,
+                    EvictionPolicy = EvictionPolicy.Lru,
+                    InMemoryFormat = InMemoryFormat.Binary
+                };
+
                 await using var client = await HazelcastClientFactory.StartNewClientAsync(_options, cancellationToken: token).ConfigureAwait(false);
+
+                await client.Sql.ExecuteCommandAsync($@"
+                CREATE OR REPLACE MAPPING 
+                {_mapExam} (
+                __key BIGINT,
+                Id BIGINT,
+                Name VARCHAR,
+                ExamDate TIMESTAMP WITH TIME ZONE,
+                CreatedAt TIMESTAMP WITH TIME ZONE,
+                ModifiedAt TIMESTAMP WITH TIME ZONE)
+                TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellationToken: token).ConfigureAwait(false);
+
                 await using var map = await client.GetMapAsync<long, HazelcastJsonValue>(_mapExam).ConfigureAwait(false);
 
                 var examsDictionary = new Dictionary<long, HazelcastJsonValue>();
@@ -463,17 +502,6 @@ TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellati
 
                 // Create a sorted index on the ExamDate attribute
                 await map.AddIndexAsync(IndexType.Sorted, "ExamDate").ConfigureAwait(false);
-
-                await client.Sql.ExecuteCommandAsync($@"
-CREATE OR REPLACE MAPPING 
-{map.Name} (
-__key BIGINT,
-Id BIGINT,
-Name VARCHAR,
-ExamDate TIMESTAMP WITH TIME ZONE,
-CreatedAt TIMESTAMP WITH TIME ZONE,
-ModifiedAt TIMESTAMP WITH TIME ZONE)
-TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellationToken: token).ConfigureAwait(false);
 
                 await map.SetAllAsync(examsDictionary).ConfigureAwait(false);
                 int count = await map.GetSizeAsync().ConfigureAwait(false);
@@ -494,7 +522,30 @@ TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellati
         {
             try
             {
+                _options.NearCaches[_mapMark] = new NearCacheOptions
+                {
+                    MaxSize = 1000,
+                    InvalidateOnChange = true,
+                    EvictionPolicy = EvictionPolicy.Lru,
+                    InMemoryFormat = InMemoryFormat.Binary
+                };
+
                 await using var client = await HazelcastClientFactory.StartNewClientAsync(_options, cancellationToken: token).ConfigureAwait(false);
+
+                await client.Sql.ExecuteCommandAsync($@"
+                CREATE OR REPLACE MAPPING 
+                {_mapMark} (
+                __key BIGINT,
+                Id BIGINT,
+                MarkValue DOUBLE,
+                StudentId BIGINT,
+                SubjectId BIGINT,
+                ExamId BIGINT,
+                CreatedAt TIMESTAMP WITH TIME ZONE,
+                ModifiedAt TIMESTAMP WITH TIME ZONE)
+                TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellationToken: token).ConfigureAwait(false);
+
+
                 await using var map = await client.GetMapAsync<long, HazelcastJsonValue>(_mapMark).ConfigureAwait(false);
 
                 var marksDictionary = new Dictionary<long, HazelcastJsonValue>();
@@ -541,19 +592,6 @@ TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellati
 
                 // Create a hash index on the ExamId attribute
                 await map.AddIndexAsync(IndexType.Hashed, "ExamId").ConfigureAwait(false);
-
-                await client.Sql.ExecuteCommandAsync($@"
-CREATE OR REPLACE MAPPING 
-{map.Name} (
-__key BIGINT,
-Id BIGINT,
-MarkValue DOUBLE,
-StudentId BIGINT,
-SubjectId BIGINT,
-ExamId BIGINT,
-CreatedAt TIMESTAMP WITH TIME ZONE,
-ModifiedAt TIMESTAMP WITH TIME ZONE)
-TYPE IMap OPTIONS ('keyFormat'='bigint', 'valueFormat'='json-flat')", cancellationToken: token).ConfigureAwait(false);
 
                 await map.SetAllAsync(marksDictionary).ConfigureAwait(false);
                 int count = await map.GetSizeAsync().ConfigureAwait(false);
