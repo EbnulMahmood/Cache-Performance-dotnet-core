@@ -33,37 +33,26 @@ namespace Cache
             {
                 var studentSubjectMarksDtoList = new List<StudentSubjectMarksDto>();
 
-                var hazelcastOptions = new HazelcastOptionsBuilder().Build();
+                await using var client = await HazelcastClientFactory.StartNewClientAsync(_options, cancellationToken: token).ConfigureAwait(false);
 
-                var factoryMark = new MarkPortableFactoryV5();
-                var factoryStudent = new StudentPortableFactory();
-                var factorySubject = new SubjectPortableFactory();
-                var factoryExam = new ExamPortableFactory();
+                await using var result = await client.Sql.ExecuteQueryAsync($@"
+SELECT 
+    mm.StudentName AS StudentName
+    ,mm.SubjectName AS SubjectName
+    ,MAX(mm.MarkValue) AS HighestMark
+    ,COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM {_mapMark} mm
+GROUP BY mm.StudentName, mm.SubjectName
+ORDER BY mm.StudentName, mm.SubjectName", cancellationToken: token);
 
-                hazelcastOptions.Serialization
-                    .AddPortableFactory(MarkPortableFactoryV5.FactoryId, factoryMark)
-                    .AddPortableFactory(StudentPortableFactory.FactoryId, factoryStudent)
-                    .AddPortableFactory(SubjectPortableFactory.FactoryId, factorySubject)
-                    .AddPortableFactory(ExamPortableFactory.FactoryId, factoryExam);
-                await using var client = await HazelcastClientFactory.StartNewClientAsync(hazelcastOptions, cancellationToken: token).ConfigureAwait(false);
-                var mapMark = await client.GetMapAsync<long, PMarkV5>(_mapMark).ConfigureAwait(false);
-
-
-                //var result1 = await mapMark.GetValuesAsync().ConfigureAwait(false);
-                //var res1 = result1.ToList();
-                //int count1 = res1.Count;
-
-                //var predicate1 = Predicates.Sql("markValue = 100");
-                //var result2 = await mapMark.GetValuesAsync(predicate1).ConfigureAwait(false);
-                //var res2 = result2.ToList();
-                //int count2 = res2.Count;
-
-
-                var predicate2 = Predicates.Sql("student.name = 'Ken Corkery'");
-
-                var result5 = await mapMark.GetValuesAsync(predicate2).ConfigureAwait(false);
-                var res5 = result5.ToList();
-                int count5 = res5.Count;
+                studentSubjectMarksDtoList = await result.Select(row =>
+                    new StudentSubjectMarksDto
+                    {
+                        StudentName = row.GetColumn<string>("StudentName"),
+                        SubjectName = row.GetColumn<string>("SubjectName"),
+                        HighestMark = row.GetColumn<double>("HighestMark"),
+                        ExamCount = (int)row.GetColumn<long>("ExamCount"),
+                    }).ToListAsync(token).ConfigureAwait(false);
 
                 return studentSubjectMarksDtoList;
             }
@@ -83,17 +72,14 @@ namespace Cache
                 await using var client = await HazelcastClientFactory.StartNewClientAsync(_options, cancellationToken: token).ConfigureAwait(false);
 
                 await using var result = await client.Sql.ExecuteQueryAsync($@"
-SELECT 
-    s.Name AS StudentName,
-    sub.Name AS SubjectName,
-    MAX(m.MarkValue) AS HighestMark,
-    CAST(COUNT(DISTINCT m.ExamId) AS int) AS ExamCount
-FROM marksv5 m
-JOIN studentsv5 s ON s.__key = m.StudentId
-JOIN subjectsv5 sub ON sub.__key = m.SubjectId
-JOIN exams e ON e.__key = m.ExamId
-GROUP BY s.__key, s.Name, sub.__key, sub.Name
-HAVING MAX(m.MarkValue) = 100", cancellationToken: token);
+SELECT
+    mm.StudentName AS StudentName,
+    mm.SubjectName AS SubjectName,
+    MAX(mm.MarkValue) AS HighestMark,
+    COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM {_mapMark} mm
+GROUP BY mm.StudentName, mm.SubjectName
+HAVING MAX(mm.MarkValue) = 100", cancellationToken: token);
 
                 studentSubjectMarksDtoList = await result.Select(row =>
                     new StudentSubjectMarksDto
@@ -101,7 +87,7 @@ HAVING MAX(m.MarkValue) = 100", cancellationToken: token);
                         StudentName = row.GetColumn<string>("StudentName"),
                         SubjectName = row.GetColumn<string>("SubjectName"),
                         HighestMark = row.GetColumn<double>("HighestMark"),
-                        ExamCount = row.GetColumn<int>("ExamCount"),
+                        ExamCount = (int)row.GetColumn<long>("ExamCount"),
                     }).ToListAsync(token).ConfigureAwait(false);
 
                 return studentSubjectMarksDtoList;
@@ -123,13 +109,11 @@ HAVING MAX(m.MarkValue) = 100", cancellationToken: token);
 
                 await using var result = await client.Sql.ExecuteQueryAsync($@"
 SELECT 
-    s.Name AS StudentName,
-    ROUND(AVG(m.MarkValue), 2) AS AverageMark,
-    CAST(COUNT(DISTINCT m.ExamId) AS int) AS ExamCount
-FROM marksv5 m
-JOIN studentsv5 s ON s.__key = m.StudentId
-JOIN examsv5 e ON e.__key = m.ExamId
-GROUP BY s.__key, s.Name
+    mm.StudentName AS StudentName
+    ,ROUND(AVG(mm.MarkValue), 2) AS AverageMark
+    ,COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM {_mapMark} mm
+GROUP BY mm.StudentName
 ORDER BY AverageMark DESC
 LIMIT ?", cancellationToken: token, parameters: topCount);
 
@@ -138,7 +122,7 @@ LIMIT ?", cancellationToken: token, parameters: topCount);
                     {
                         StudentName = row.GetColumn<string>("StudentName"),
                         AverageMark = row.GetColumn<double>("AverageMark"),
-                        ExamCount = row.GetColumn<int>("ExamCount"),
+                        ExamCount = (int)row.GetColumn<long>("ExamCount"),
                     }).ToListAsync(token).ConfigureAwait(false);
 
                 return studentPerformanceDtoList;
@@ -160,13 +144,11 @@ LIMIT ?", cancellationToken: token, parameters: topCount);
 
                 await using var result = await client.Sql.ExecuteQueryAsync($@"
 SELECT 
-    s.Name AS StudentName,
-    ROUND(AVG(m.MarkValue), 2) AS AverageMark,
-    CAST(COUNT(DISTINCT m.ExamId) AS int) AS ExamCount
-FROM marksv5 m
-JOIN studentsv5 s ON s.__key = m.StudentId
-JOIN examsv5 e ON e.__key = m.ExamId
-GROUP BY s.__key, s.Name
+    mm.StudentName AS StudentName,
+    ROUND(AVG(mm.MarkValue), 2) AS AverageMark,
+    COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM {_mapMark} mm
+GROUP BY mm.StudentName
 ORDER BY AverageMark ASC
 LIMIT ?", cancellationToken: token, parameters: bottomCount);
 
@@ -175,7 +157,7 @@ LIMIT ?", cancellationToken: token, parameters: bottomCount);
                     {
                         StudentName = row.GetColumn<string>("StudentName"),
                         AverageMark = row.GetColumn<double>("AverageMark"),
-                        ExamCount = row.GetColumn<int>("ExamCount"),
+                        ExamCount = (int)row.GetColumn<long>("ExamCount"),
                     }).ToListAsync(token).ConfigureAwait(false);
 
                 return studentPerformanceDtoList;
