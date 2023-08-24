@@ -38,15 +38,13 @@ namespace Services
             {
                 const string query = $@"
 SELECT 
-    s.Name AS StudentName
-    ,sub.Name AS SubjectName
-    ,MAX(m.MarkValue) AS HighestMark
-    ,COUNT(DISTINCT m.ExamId) AS ExamCount
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-JOIN Subjects sub ON m.SubjectId = sub.Id
-GROUP BY s.Id, s.Name, sub.Id, sub.Name
-ORDER BY s.Name, sub.Name";
+    mm.StudentName AS StudentName
+    ,mm.SubjectName AS SubjectName
+    ,MAX(mm.MarkValue) AS HighestMark
+    ,COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM MergedMarks mm
+GROUP BY mm.StudentName, mm.SubjectName
+ORDER BY mm.StudentName, mm.SubjectName";
 
                 return await _dataAccess.LoadDataAsync<StudentSubjectMarksDto, dynamic>(query, new { });
             }
@@ -62,16 +60,13 @@ ORDER BY s.Name, sub.Name";
             {
                 const string query = $@"
 SELECT
-    s.Name AS StudentName,
-    sub.Name AS SubjectName,
-    MAX(m.MarkValue) AS HighestMark,
-    COUNT(DISTINCT e.Id) AS ExamCount
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-JOIN Subjects sub ON sub.Id = m.SubjectId
-JOIN Exams e ON e.Id = m.ExamId
-GROUP BY s.Id, s.Name, sub.Id, sub.Name
-HAVING MAX(m.MarkValue) = 100";
+    mm.StudentName AS StudentName,
+    mm.SubjectName AS SubjectName,
+    MAX(mm.MarkValue) AS HighestMark,
+    COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM MergedMarks mm
+GROUP BY mm.StudentName, mm.SubjectName
+HAVING MAX(mm.MarkValue) = 100";
 
                 return await _dataAccess.LoadDataAsync<StudentSubjectMarksDto, dynamic>(query, new { });
             }
@@ -89,13 +84,11 @@ HAVING MAX(m.MarkValue) = 100";
                 const string query = $@"
 SELECT 
     TOP (@TopCount)
-    s.Name AS StudentName
-    ,ROUND(AVG(m.MarkValue), 2) AS AverageMark
-    ,COUNT(DISTINCT e.Id) AS ExamCount
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-JOIN Exams e ON e.Id = m.ExamId
-GROUP BY s.Id, s.Name
+    mm.StudentName AS StudentName
+    ,ROUND(AVG(mm.MarkValue), 2) AS AverageMark
+    ,COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM MergedMarks mm
+GROUP BY mm.StudentName
 ORDER BY AverageMark DESC";
 
                 return await _dataAccess.LoadDataAsync<StudentPerformanceDto, dynamic>(query, new { TopCount = topCount });
@@ -114,13 +107,11 @@ ORDER BY AverageMark DESC";
                 const string query = @"
 SELECT 
     TOP (@BottomCount)
-    s.Name AS StudentName,
-    ROUND(AVG(m.MarkValue), 2) AS AverageMark,
-    COUNT(DISTINCT e.Id) AS ExamCount
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-JOIN Exams e ON e.Id = m.ExamId
-GROUP BY s.Id, s.Name
+    mm.StudentName AS StudentName,
+    ROUND(AVG(mm.MarkValue), 2) AS AverageMark,
+    COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM MergedMarks mm
+GROUP BY mm.StudentName
 ORDER BY AverageMark ASC";
 
                 return await _dataAccess.LoadDataAsync<StudentPerformanceDto, dynamic>(query, new { BottomCount = bottomCount });
@@ -136,15 +127,12 @@ ORDER BY AverageMark ASC";
             try
             {
                 const string query = @"
-SELECT 
-    TOP (@TopCount)
-    s.Name AS StudentName,
-    ROUND(AVG(m.MarkValue), 2) AS AverageMark,
-    COUNT(DISTINCT e.Id) AS ExamCount
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-JOIN Exams e ON e.Id = m.ExamId
-GROUP BY s.Id, s.Name
+SELECT TOP (@TopCount)
+    mm.StudentName AS StudentName,
+    ROUND(AVG(mm.MarkValue), 2) AS AverageMark,
+    COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM MergedMarks mm
+GROUP BY mm.StudentName
 ORDER BY AverageMark DESC";
 
                 return await _dataAccess.LoadDataAsync<StudentPerformanceDto, dynamic>(query, new { TopCount = topCount });
@@ -160,23 +148,22 @@ ORDER BY AverageMark DESC";
             try
             {
                 const string query = @"
-SELECT 
-    TOP (@NumberOfStudents) s.Name
-    ,s.RollNumber
-    ,COUNT(DISTINCT m.ExamId) AS ExamCount
-    ,ROUND(SUM(m.MarkValue), 2) AS TotalMarks
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-GROUP BY s.Id, s.Name, s.RollNumber
-HAVING COUNT(DISTINCT m.ExamId) = (
+SELECT TOP (@NumberOfStudents) 
+    mm.StudentName AS Name
+    ,mm.StudentRollNumber AS RollNumber
+    ,COUNT(DISTINCT mm.ExamName) AS ExamCount
+    ,ROUND(SUM(mm.MarkValue), 2) AS TotalMarks
+FROM MergedMarks mm
+GROUP BY mm.StudentName, mm.StudentRollNumber
+HAVING COUNT(DISTINCT mm.ExamName) = (
     SELECT MAX(ExamCount)
     FROM (
-        SELECT COUNT(DISTINCT ExamId) AS ExamCount
-        FROM Marks
-        GROUP BY StudentId
+        SELECT COUNT(DISTINCT ExamName) AS ExamCount
+        FROM MergedMarks
+        GROUP BY StudentName, StudentRollNumber
     ) subq
 )
-ORDER BY SUM(m.MarkValue) ASC";
+ORDER BY SUM(mm.MarkValue) ASC";
 
                 return await _dataAccess.LoadDataAsync<StudentExamMarksDto, dynamic>(query, new { NumberOfStudents = numberOfStudents });
             }
@@ -192,23 +179,22 @@ ORDER BY SUM(m.MarkValue) ASC";
             try
             {
                 const string query = @"
-SELECT 
-TOP (@numberOfStudents) s.Name
-,s.RollNumber
-,COUNT(DISTINCT m.ExamId) AS ExamCount
-,ROUND(SUM(m.MarkValue), 2) AS TotalMarks
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-GROUP BY s.Id, s.Name, s.RollNumber
-HAVING COUNT(DISTINCT m.ExamId) = (
+SELECT TOP (@numberOfStudents)
+    mm.StudentName AS Name
+    ,mm.StudentRollNumber AS RollNumber
+    ,COUNT(DISTINCT mm.ExamName) AS ExamCount
+    ,ROUND(SUM(mm.MarkValue), 2) AS TotalMarks
+FROM MergedMarks mm
+GROUP BY mm.StudentName, mm.StudentRollNumber
+HAVING COUNT(DISTINCT mm.ExamName) = (
     SELECT MIN(ExamCount)
     FROM (
-        SELECT COUNT(DISTINCT ExamId) AS ExamCount
-        FROM Marks
-        GROUP BY StudentId
+        SELECT COUNT(DISTINCT ExamName) AS ExamCount
+        FROM MergedMarks
+        GROUP BY StudentName, StudentRollNumber
     ) subq
 )
-ORDER BY SUM(m.MarkValue) DESC";
+ORDER BY SUM(mm.MarkValue) DESC";
 
                 return await _dataAccess.LoadDataAsync<StudentExamMarksDto, dynamic>(query, new { NumberOfStudents = numberOfStudents });
             }
