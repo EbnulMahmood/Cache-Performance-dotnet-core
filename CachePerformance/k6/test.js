@@ -1,15 +1,15 @@
 ﻿import http from 'k6/http';
 import { check, sleep } from 'k6';
 
-//const url = 'https://localhost:44362';
-//hazelcast
-const url = 'https://localhost:44362/hazelcast/cache';
+// const url = 'https://localhost:44362';
+//const url = 'http://192.168.2.220:8001';
+const url = 'https://localhost:44362/SingleStore/cache';
 
 // Define the endpoints to test
 const endpoints = [
     // `${url}/subject-wise-highest-marks/and-exam-count`,
     // `${url}/top-performing-students/by-subject`,
-    // `${url}/top-students-by-average-mark/1/true`,
+     //`${url}/top-students-by-average-mark/1/true`,
     // `${url}/low-performing-students/by-average-mark/1/true`,
     // `${url}/high-performing-students/by-average-mark/1/true`,
     // `${url}/students-with-lowest-marks/1/true`,
@@ -19,7 +19,7 @@ const endpoints = [
 // Define the options for the test
 export let options = {
     // Simulate 100 virtual users
-    vus: 100,
+    vus: 1000,
     // Use a constant arrival rate scenario
     scenarios: {
         constant_request_rate: {
@@ -27,9 +27,9 @@ export let options = {
             rate: 10,
             timeUnit: '1s',
             // Run the test for 10 minutes
-            duration: '10m',
-            preAllocatedVUs: 100,
-            maxVUs: 200
+            duration: '2m',
+            preAllocatedVUs: 20,
+            maxVUs: 20
         }
     }
 };

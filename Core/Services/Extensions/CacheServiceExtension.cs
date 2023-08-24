@@ -11,6 +11,7 @@ namespace Services.Extensions
             services.AddRepositories();
             services.AddDapperRepositories();
             services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<IStudentServiceV2, StudentServiceV2>();
         }
     }
 }

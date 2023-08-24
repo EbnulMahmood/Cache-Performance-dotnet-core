@@ -12,5 +12,6 @@ namespace Model
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<Exam> Exams { get; set; }
         public DbSet<Mark> Marks { get; set; }
+        public DbSet<MergedMark> MergedMarks { get; set; }
     }
 }

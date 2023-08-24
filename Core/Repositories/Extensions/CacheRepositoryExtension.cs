@@ -7,6 +7,7 @@ namespace Repositories.Extensions
         public static void AddRepositories(this IServiceCollection services)
         {
             services.AddScoped<IStudentRepository, StudentRepository>();
+            services.AddScoped<IStudentRepositoryV2, StudentRepositoryV2>();
         }
     }
 }
