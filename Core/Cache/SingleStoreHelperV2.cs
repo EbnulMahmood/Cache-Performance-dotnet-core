@@ -94,13 +94,11 @@ namespace Cache
             {
                 var query = $@"
 SELECT 
-s.Name AS StudentName,
-ROUND(AVG(m.MarkValue), 2) AS AverageMark,
-COUNT(DISTINCT e.Id) AS ExamCount
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-JOIN Exams e ON e.Id = m.ExamId
-GROUP BY s.Id, s.Name
+mm.StudentName AS StudentName,
+ROUND(AVG(mm.MarkValue), 2) AS AverageMark,
+COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM MergedMarks mm
+GROUP BY mm.StudentName
 ORDER BY AverageMark DESC
 LIMIT {topCount}
 ";
@@ -130,13 +128,11 @@ LIMIT {topCount}
             {
                 var query = $@"
 SELECT 
-s.Name AS StudentName,
-ROUND(AVG(m.MarkValue), 2) AS AverageMark,
-COUNT(DISTINCT e.Id) AS ExamCount
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-JOIN Exams e ON e.Id = m.ExamId
-GROUP BY s.Id, s.Name
+mm.StudentName AS StudentName,
+ROUND(AVG(mm.MarkValue), 2) AS AverageMark,
+COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM MergedMarks mm
+GROUP BY mm.StudentName
 ORDER BY AverageMark ASC
 LIMIT {bottomCount}
 ";
@@ -166,22 +162,21 @@ LIMIT {bottomCount}
             {
                 var query = $@"
 SELECT 
- s.Name
-,s.RollNumber
-,COUNT(DISTINCT m.ExamId) AS ExamCount
-,ROUND(SUM(m.MarkValue), 2) AS TotalMarks
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-GROUP BY s.Id, s.Name, s.RollNumber
-HAVING COUNT(DISTINCT m.ExamId) = (
+mm.StudentName AS Name
+,mm.StudentRollNumber AS RollNumber
+,COUNT(DISTINCT mm.ExamName) AS ExamCount
+,ROUND(SUM(mm.MarkValue), 2) AS TotalMarks
+FROM MergedMarks mm
+GROUP BY mm.StudentName, mm.StudentRollNumber
+HAVING COUNT(DISTINCT mm.ExamName) = (
     SELECT MIN(ExamCount)
     FROM (
-        SELECT COUNT(DISTINCT ExamId) AS ExamCount
-        FROM Marks
-        GROUP BY StudentId
+        SELECT COUNT(DISTINCT ExamName) AS ExamCount
+        FROM MergedMarks
+        GROUP BY StudentName, StudentRollNumber
     ) subq
 )
-ORDER BY SUM(m.MarkValue) DESC
+ORDER BY SUM(mm.MarkValue) DESC
 LIMIT {numberOfStudents}
 ";
                 using (var con = new SingleStoreConnection())
@@ -210,22 +205,21 @@ LIMIT {numberOfStudents}
             {
                 var query = $@"
 SELECT 
-s.Name
-,s.RollNumber
-,COUNT(DISTINCT m.ExamId) AS ExamCount
-,ROUND(SUM(m.MarkValue), 2) AS TotalMarks
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-GROUP BY s.Id, s.Name, s.RollNumber
-HAVING COUNT(DISTINCT m.ExamId) = (
-    SELECT MAX(ExamCount)
+mm.StudentName AS Name
+,mm.StudentRollNumber AS RollNumber
+,COUNT(DISTINCT mm.ExamName) AS ExamCount
+,ROUND(SUM(mm.MarkValue), 2) AS TotalMarks
+FROM MergedMarks mm
+GROUP BY mm.StudentName, mm.StudentRollNumber
+HAVING COUNT(DISTINCT mm.ExamName) = (
+SELECT MAX(ExamCount)
     FROM (
-        SELECT COUNT(DISTINCT ExamId) AS ExamCount
-        FROM Marks
-        GROUP BY StudentId
+        SELECT COUNT(DISTINCT ExamName) AS ExamCount
+        FROM MergedMarks
+        GROUP BY StudentName, StudentRollNumber
     ) subq
 )
-ORDER BY SUM(m.MarkValue) ASC
+ORDER BY SUM(mm.MarkValue) ASC
 LIMIT {numberOfStudents}
 ";
                 using (var con = new SingleStoreConnection())
@@ -254,15 +248,13 @@ LIMIT {numberOfStudents}
             {
                 var query = $@"
 SELECT 
-s.Name AS StudentName
-,sub.Name AS SubjectName
-,MAX(m.MarkValue) AS HighestMark
-,COUNT(DISTINCT m.ExamId) AS ExamCount
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-JOIN Subjects sub ON m.SubjectId = sub.Id
-GROUP BY s.Id, s.Name, sub.Id, sub.Name
-ORDER BY s.Name, sub.Name
+mm.StudentName AS StudentName
+,mm.SubjectName AS SubjectName
+,MAX(mm.MarkValue) AS HighestMark
+,COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM MergedMarks mm
+GROUP BY mm.StudentName, mm.SubjectName
+ORDER BY mm.StudentName, mm.SubjectName;
 ";
                 using (var con = new SingleStoreConnection())
                 {
@@ -290,16 +282,13 @@ ORDER BY s.Name, sub.Name
             {
                 var query = $@"
 SELECT
-s.Name AS StudentName,
-sub.Name AS SubjectName,
-MAX(m.MarkValue) AS HighestMark,
-COUNT(DISTINCT e.Id) AS ExamCount
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-JOIN Subjects sub ON sub.Id = m.SubjectId
-JOIN Exams e ON e.Id = m.ExamId
-GROUP BY s.Id, s.Name, sub.Id, sub.Name
-HAVING MAX(m.MarkValue) = 100
+mm.StudentName AS StudentName,
+mm.SubjectName AS SubjectName,
+MAX(mm.MarkValue) AS HighestMark,
+COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM MergedMarks mm
+GROUP BY mm.StudentName, mm.SubjectName
+HAVING MAX(mm.MarkValue) = 100
 ";
                 using (var con = new SingleStoreConnection())
                 {
@@ -327,13 +316,11 @@ HAVING MAX(m.MarkValue) = 100
             {
                 var query = $@"
 SELECT 
-s.Name AS StudentName
-,ROUND(AVG(m.MarkValue), 2) AS AverageMark
-,COUNT(DISTINCT e.Id) AS ExamCount
-FROM Marks m
-JOIN Students s ON s.Id = m.StudentId
-JOIN Exams e ON e.Id = m.ExamId
-GROUP BY s.Id, s.Name
+mm.StudentName AS StudentName
+,ROUND(AVG(mm.MarkValue), 2) AS AverageMark
+,COUNT(DISTINCT mm.ExamName) AS ExamCount
+FROM MergedMarks mm
+GROUP BY mm.StudentName
 ORDER BY AverageMark DESC
 LIMIT {topCount}
 ";
