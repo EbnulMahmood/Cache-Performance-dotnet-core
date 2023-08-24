@@ -25,6 +25,7 @@ namespace Services
     {
         private readonly IStudentRepositoryV2 _studentRepository;
         private readonly IDapperDataAccess _dataAccess;
+        private const int _commandTimeout = 50;
 
         public StudentServiceV2(IStudentRepositoryV2 studentRepository
             , IDapperDataAccess dataAccess)
@@ -47,7 +48,7 @@ FROM MergedMarks mm
 GROUP BY mm.StudentName, mm.SubjectName
 ORDER BY mm.StudentName, mm.SubjectName";
 
-                return await _dataAccess.LoadDataAsync<StudentSubjectMarksDto, dynamic>(query, new { });
+                return await _dataAccess.LoadDataAsync<StudentSubjectMarksDto, dynamic>(query, new { }, commandTimeout: _commandTimeout);
             }
             catch (Exception)
             {
@@ -69,7 +70,7 @@ FROM MergedMarks mm
 GROUP BY mm.StudentName, mm.SubjectName
 HAVING MAX(mm.MarkValue) = 100";
 
-                return await _dataAccess.LoadDataAsync<StudentSubjectMarksDto, dynamic>(query, new { });
+                return await _dataAccess.LoadDataAsync<StudentSubjectMarksDto, dynamic>(query, new { }, commandTimeout: _commandTimeout);
             }
             catch (Exception)
             {
@@ -92,7 +93,7 @@ FROM MergedMarks mm
 GROUP BY mm.StudentName
 ORDER BY AverageMark DESC";
 
-                return await _dataAccess.LoadDataAsync<StudentPerformanceDto, dynamic>(query, new { TopCount = topCount });
+                return await _dataAccess.LoadDataAsync<StudentPerformanceDto, dynamic>(query, new { TopCount = topCount }, commandTimeout: _commandTimeout);
             }
             catch (Exception)
             {
@@ -115,7 +116,7 @@ FROM MergedMarks mm
 GROUP BY mm.StudentName
 ORDER BY AverageMark ASC";
 
-                return await _dataAccess.LoadDataAsync<StudentPerformanceDto, dynamic>(query, new { BottomCount = bottomCount });
+                return await _dataAccess.LoadDataAsync<StudentPerformanceDto, dynamic>(query, new { BottomCount = bottomCount }, commandTimeout: _commandTimeout);
             }
             catch (Exception)
             {
@@ -136,7 +137,7 @@ FROM MergedMarks mm
 GROUP BY mm.StudentName
 ORDER BY AverageMark DESC";
 
-                return await _dataAccess.LoadDataAsync<StudentPerformanceDto, dynamic>(query, new { TopCount = topCount });
+                return await _dataAccess.LoadDataAsync<StudentPerformanceDto, dynamic>(query, new { TopCount = topCount }, commandTimeout: _commandTimeout);
             }
             catch (Exception)
             {
@@ -166,7 +167,7 @@ HAVING COUNT(DISTINCT mm.ExamName) = (
 )
 ORDER BY SUM(mm.MarkValue) ASC";
 
-                return await _dataAccess.LoadDataAsync<StudentExamMarksDto, dynamic>(query, new { NumberOfStudents = numberOfStudents });
+                return await _dataAccess.LoadDataAsync<StudentExamMarksDto, dynamic>(query, new { NumberOfStudents = numberOfStudents }, commandTimeout: _commandTimeout);
             }
             catch (Exception)
             {
@@ -197,7 +198,7 @@ HAVING COUNT(DISTINCT mm.ExamName) = (
 )
 ORDER BY SUM(mm.MarkValue) DESC";
 
-                return await _dataAccess.LoadDataAsync<StudentExamMarksDto, dynamic>(query, new { NumberOfStudents = numberOfStudents });
+                return await _dataAccess.LoadDataAsync<StudentExamMarksDto, dynamic>(query, new { NumberOfStudents = numberOfStudents }, commandTimeout: _commandTimeout);
             }
             catch (Exception)
             {
