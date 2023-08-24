@@ -9,6 +9,7 @@ namespace Repositories
         Task<IEnumerable<Mark>> LoadMarkListAsync(CancellationToken token = default);
         Task<IEnumerable<Student>> LoadStudentListAsync(CancellationToken token = default);
         Task<IEnumerable<Subject>> LoadSubjectListAsync(CancellationToken token = default);
+        Task<IEnumerable<MergedMark>> LoadMergedMarksListAsync(CancellationToken token = default);
         Task SaveMergedMarkListAsync(List<MergedMark> mergedMarks, CancellationToken token = default);
         Task SaveExamListAsync(List<Exam> examList, CancellationToken token = default);
         Task SaveMarkListAsync(List<Mark> markList, CancellationToken token = default);
@@ -139,6 +140,19 @@ namespace Repositories
             try
             {
                 return await _dbContext.Marks.ToListAsync(token);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<MergedMark>> LoadMergedMarksListAsync(CancellationToken token = default)
+        {
+            try
+            {
+                return await _dbContext.MergedMarks.ToListAsync(token);
             }
             catch (Exception)
             {
