@@ -7,8 +7,8 @@ namespace Model
 {
     public interface IDapperDataAccess
     {
-        Task<TEntity> GetFirstOrDefaultDataAsync<TEntity, TParam>(string sql, TParam parameters, CommandType commandType = 0);
-        Task<IEnumerable<TEntity>> LoadDataAsync<TEntity, TParam>(string sql, TParam parameters, CommandType commandType = 0);
+        Task<TEntity> GetFirstOrDefaultDataAsync<TEntity, TParam>(string sql, TParam parameters, CommandType commandType = 0, int? commandTimeout = null);
+        Task<IEnumerable<TEntity>> LoadDataAsync<TEntity, TParam>(string sql, TParam parameters, CommandType commandType = 0, int? commandTimeout = null);
     }
 
     internal sealed class DapperDataAccess : IDapperDataAccess
@@ -20,13 +20,13 @@ namespace Model
             _config = config;
         }
 
-        public async Task<TEntity> GetFirstOrDefaultDataAsync<TEntity, TParam>(string sql, TParam parameters, CommandType commandType = default)
+        public async Task<TEntity> GetFirstOrDefaultDataAsync<TEntity, TParam>(string sql, TParam parameters, CommandType commandType = default, int? commandTimeout = null)
         {
             try
             {
                 using IDbConnection connection = new SqlConnection(_config.GetConnectionString(_connectionString));
 
-                return await connection.QueryFirstOrDefaultAsync<TEntity>(sql, parameters, commandType: commandType);
+                return await connection.QueryFirstOrDefaultAsync<TEntity>(sql, parameters, commandType: commandType, commandTimeout: commandTimeout);
             }
             catch (Exception)
             {
@@ -35,13 +35,13 @@ namespace Model
             }
         }
 
-        public async Task<IEnumerable<TEntity>> LoadDataAsync<TEntity, TParam>(string sql, TParam parameters, CommandType commandType = default)
+        public async Task<IEnumerable<TEntity>> LoadDataAsync<TEntity, TParam>(string sql, TParam parameters, CommandType commandType = default, int? commandTimeout = null)
         {
             try
             {
                 using IDbConnection connection = new SqlConnection(_config.GetConnectionString(_connectionString));
 
-                return await connection.QueryAsync<TEntity>(sql, parameters, commandType: commandType);
+                return await connection.QueryAsync<TEntity>(sql, parameters, commandType: commandType, commandTimeout: commandTimeout);
             }
             catch (Exception)
             {
