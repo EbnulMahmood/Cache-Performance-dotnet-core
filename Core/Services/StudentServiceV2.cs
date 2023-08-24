@@ -17,6 +17,7 @@ namespace Services
         Task<IEnumerable<Mark>> LoadMarkListAsync(CancellationToken token = default);
         Task<IEnumerable<Student>> LoadStudentListAsync(CancellationToken token = default);
         Task<IEnumerable<Subject>> LoadSubjectListAsync(CancellationToken token = default);
+        Task<IEnumerable<MergedMark>> LoadMergedMarksListAsync(CancellationToken token = default);
         (List<Student>, List<Subject>, List<Exam>, List<Mark>) GenerateData(int min, int max);
     }
 
@@ -401,6 +402,19 @@ ORDER BY SUM(mm.MarkValue) DESC";
             try
             {
                 return await _studentRepository.LoadSubjectListAsync(token);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<MergedMark>> LoadMergedMarksListAsync(CancellationToken token = default)
+        {
+            try
+            {
+                return await _studentRepository.LoadMergedMarksListAsync(token);
             }
             catch (Exception)
             {
