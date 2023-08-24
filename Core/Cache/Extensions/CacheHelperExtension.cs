@@ -14,6 +14,7 @@ namespace Cache.Extensions
             services.AddSingleton<IHazelcastStudentHelperV4, HazelcastStudentHelperV4>(_ => new HazelcastStudentHelperV4(hazelcastOptions));
             services.AddSingleton<ICouchbaseStudentHelper, CouchbaseStudentHelper>();
             services.AddSingleton<ISingleStoreHelper, SingleStoreHelper>();
+            services.AddSingleton<ISingleStoreHelperV2, SingleStoreHelperV2>();
         }
 
         public static void AddIgniteCacheService(this IServiceCollection services, params string[] endPoints)
