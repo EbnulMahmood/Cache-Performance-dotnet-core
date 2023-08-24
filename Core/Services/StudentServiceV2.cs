@@ -25,7 +25,7 @@ namespace Services
     {
         private readonly IStudentRepositoryV2 _studentRepository;
         private readonly IDapperDataAccess _dataAccess;
-        private const int _commandTimeout = 50;
+        private const int _commandTimeout = 100;
 
         public StudentServiceV2(IStudentRepositoryV2 studentRepository
             , IDapperDataAccess dataAccess)
