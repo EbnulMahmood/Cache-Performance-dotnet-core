@@ -8,20 +8,20 @@ namespace CachePerformance.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class HazelcastStudentsCacheV5Controller : ControllerBase
+    public class HazelcastStudentsCacheV1Controller : ControllerBase
     {
         private readonly IStudentServiceV2 _studentService;
-        private readonly IHazelcastStudentHelperV5 _hazelcastStudentHelper;
+        private readonly IHazelcastStudentHelperV1 _hazelcastStudentHelper;
 
-        public HazelcastStudentsCacheV5Controller(IStudentServiceV2 studentService
-            , IHazelcastStudentHelperV5 hazelcastStudentHelper)
+        public HazelcastStudentsCacheV1Controller(IStudentServiceV2 studentService
+            , IHazelcastStudentHelperV1 hazelcastStudentHelper)
         {
             _studentService = studentService;
             _hazelcastStudentHelper = hazelcastStudentHelper;
         }
 
         [HttpGet]
-        [Route("/hazelcast/v5/cache/subject-wise-highest-marks/and-exam-count")]
+        [Route("/hazelcast/v1/cache/subject-wise-highest-marks/and-exam-count")]
         public async Task<IActionResult> LoadSubjectWiseHighestMarksAndExamCount(CancellationToken token = default)
         {
             try
@@ -41,7 +41,7 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/hazelcast/v5/cache/top-performing-students/by-subject")]
+        [Route("/hazelcast/v1/cache/top-performing-students/by-subject")]
         public async Task<IActionResult> LoadTopPerformingStudentsBySubject(CancellationToken token = default)
         {
             try
@@ -61,7 +61,7 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/hazelcast/v5/cache/top-students-by-average-mark/{numberOfStudent}/{showTime}")]
+        [Route("/hazelcast/v1/cache/top-students-by-average-mark/{numberOfStudent}/{showTime}")]
         public async Task<IActionResult> LoadTopStudentsByAverageMark(int numberOfStudent = 1, bool showTime = true, CancellationToken token = default)
         {
             try
@@ -88,7 +88,7 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/hazelcast/v5/cache/low-performing-students/by-average-mark/{numberOfStudent}/{showTime}")]
+        [Route("/hazelcast/v1/cache/low-performing-students/by-average-mark/{numberOfStudent}/{showTime}")]
         public async Task<IActionResult> LoadLowPerformingStudentsByAverageMark(int numberOfStudent = 1, bool showTime = true, CancellationToken token = default)
         {
             try
@@ -115,7 +115,7 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/hazelcast/v5/cache/high-performing-students/by-average-mark/{numberOfStudent}/{showTime}")]
+        [Route("/hazelcast/v1/cache/high-performing-students/by-average-mark/{numberOfStudent}/{showTime}")]
         public async Task<IActionResult> LoadHighPerformingStudentsByAverageMark(int numberOfStudent = 1, bool showTime = true, CancellationToken token = default)
         {
             try
@@ -142,7 +142,7 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/hazelcast/v5/cache/students-with-lowest-marks/{numberOfStudent}/{showTime}")]
+        [Route("/hazelcast/v1/cache/students-with-lowest-marks/{numberOfStudent}/{showTime}")]
         public async Task<IActionResult> LoadStudentsWithLowestMarks(int numberOfStudent = 1, bool showTime = true, CancellationToken token = default)
         {
             try
@@ -169,7 +169,7 @@ namespace CachePerformance.Controllers
         }
 
         [HttpGet]
-        [Route("/hazelcast/v5/cache/students-with-highest-marks/{numberOfStudent}/{showTime}")]
+        [Route("/hazelcast/v1/cache/students-with-highest-marks/{numberOfStudent}/{showTime}")]
         public async Task<IActionResult> LoadStudentsWithHighestMarks(int numberOfStudent = 1, bool showTime = true, CancellationToken token = default)
         {
             try
@@ -197,7 +197,7 @@ namespace CachePerformance.Controllers
 
         #region Seed Data
         [HttpPost]
-        [Route("/hazelcast/v5/cache/seed-students")]
+        [Route("/hazelcast/v1/cache/seed-students")]
         public async Task<IActionResult> SeedData(CancellationToken token = default)
         {
             try

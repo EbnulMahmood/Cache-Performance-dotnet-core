@@ -3,26 +3,21 @@ using Common;
 using Common.Dto;
 using Hazelcast;
 using Hazelcast.Models;
-using Hazelcast.Query;
 using Model;
-using System.Security.Cryptography;
 
 namespace Cache
 {
-    public interface IHazelcastStudentHelperV5 : IStudentQueryServiceAsync
+    public interface IHazelcastStudentHelperV1 : IStudentQueryServiceAsync
     {
         Task<int> CacheMarkListAsync(IEnumerable<MergedMark> mergedMarkList, CancellationToken token = default);
     }
 
-    internal sealed class HazelcastStudentHelperV5 : IHazelcastStudentHelperV5
+    internal sealed class HazelcastStudentHelperV1 : IHazelcastStudentHelperV1
     {
         private readonly HazelcastOptions _options;
-        private const string _mapStudent = "studentsv5";
-        private const string _mapSubject = "subjectsv5";
-        private const string _mapExam = "examsv5";
         private const string _mapMark = "MergedMarks";
 
-        public HazelcastStudentHelperV5(HazelcastOptions options)
+        public HazelcastStudentHelperV1(HazelcastOptions options)
         {
             _options = options;
         }
@@ -215,27 +210,25 @@ LIMIT ?", cancellationToken: token, parameters: topCount);
 
                 await using var result = await client.Sql.ExecuteQueryAsync($@"
 SELECT 
-    s.Name
-    ,s.RollNumber
+    m.StudentName AS Name
+    ,m.StudentRollNumber AS RollNumber
     ,CAST(m.ExamCount AS INT) AS ExamCount
     ,ROUND(m.TotalMarks, 2) AS TotalMarks
 FROM (
   SELECT 
-    StudentId
-    ,COUNT(DISTINCT ExamId) AS ExamCount
+    StudentName
+    ,StudentRollNumber
+    ,COUNT(DISTINCT ExamName) AS ExamCount
     ,SUM(MarkValue) AS TotalMarks
-  FROM marksv5
-  GROUP BY StudentId
+  FROM {_mapMark}
+  GROUP BY StudentName, StudentRollNumber
 ) m
-JOIN studentsv5 s ON s.__key = m.StudentId
 JOIN (
-  SELECT 
-    MAX(ExamCount) AS MaxExamCount
+  SELECT MAX(ExamCount) AS MaxExamCount
   FROM (
-    SELECT 
-        COUNT(DISTINCT ExamId) AS ExamCount
-    FROM marksv5
-    GROUP BY StudentId
+    SELECT COUNT(DISTINCT ExamName) AS ExamCount
+    FROM {_mapMark}
+    GROUP BY StudentName, StudentRollNumber
   ) subq
 ) mec ON m.ExamCount = mec.MaxExamCount
 ORDER BY m.TotalMarks ASC
@@ -270,27 +263,25 @@ LIMIT ?", cancellationToken: token, parameters: numberOfStudents);
 
                 await using var result = await client.Sql.ExecuteQueryAsync($@"
 SELECT 
-    s.Name
-    ,s.RollNumber
+    m.StudentName AS Name
+    ,m.StudentRollNumber AS RollNumber
     ,CAST(m.ExamCount AS INT) AS ExamCount
     ,ROUND(m.TotalMarks, 2) AS TotalMarks
 FROM (
   SELECT 
-    StudentId
-    ,COUNT(DISTINCT ExamId) AS ExamCount
+    StudentName
+    ,StudentRollNumber
+    ,COUNT(DISTINCT ExamName) AS ExamCount
     ,SUM(MarkValue) AS TotalMarks
-  FROM marksv5
-  GROUP BY StudentId
+  FROM {_mapMark}
+  GROUP BY StudentName, StudentRollNumber
 ) m
-JOIN studentsv5 s ON s.__key = m.StudentId
 JOIN (
-  SELECT 
-    MIN(ExamCount) AS MinExamCount
+  SELECT MIN(ExamCount) AS MinExamCount
   FROM (
-    SELECT 
-        COUNT(DISTINCT ExamId) AS ExamCount
-    FROM marksv5
-    GROUP BY StudentId
+    SELECT COUNT(DISTINCT ExamName) AS ExamCount
+    FROM {_mapMark}
+    GROUP BY StudentName, StudentRollNumber
   ) subq
 ) mec ON m.ExamCount = mec.MinExamCount
 ORDER BY m.TotalMarks DESC
@@ -320,12 +311,18 @@ LIMIT ?", cancellationToken: token, parameters: numberOfStudents);
             {
                 var obj = new PMarkV5();
 
-                var hazelcastOptions = new HazelcastOptionsBuilder().Build();
                 var factory = new MarkPortableFactoryV5();
-                hazelcastOptions.Serialization
+                _options.Serialization
                     .AddPortableFactory(MarkPortableFactoryV5.FactoryId, factory);
+                //_options.NearCaches[_mapMark] = new NearCacheOptions
+                //{
+                //    //MaxSize = 1000,
+                //    InvalidateOnChange = true,
+                //    EvictionPolicy = EvictionPolicy.Lru,
+                //    InMemoryFormat = InMemoryFormat.Binary
+                //};
 
-                await using var client = await HazelcastClientFactory.StartNewClientAsync(hazelcastOptions, cancellationToken: token).ConfigureAwait(false);
+                await using var client = await HazelcastClientFactory.StartNewClientAsync(_options, cancellationToken: token).ConfigureAwait(false);
 
                 await client.Sql.ExecuteCommandAsync($@"
 CREATE OR REPLACE MAPPING 
@@ -337,12 +334,16 @@ CREATE OR REPLACE MAPPING
   {nameof(obj.SubjectName)} VARCHAR,
   {nameof(obj.SubjectDescription)} VARCHAR,
   {nameof(obj.ExamName)} VARCHAR,
-  {nameof(obj.ExamDate)} TIMESTAMP WITH TIME ZONE,
-  {nameof(obj.CreatedAt)} TIMESTAMP WITH TIME ZONE,
-  {nameof(obj.ModifiedAt)} TIMESTAMP WITH TIME ZONE
+  {nameof(obj.ExamDate)} BIGINT,
+  {nameof(obj.CreatedAt)} BIGINT,
+  {nameof(obj.ModifiedAt)} BIGINT
 ) TYPE IMap OPTIONS (
   'keyFormat'='bigint',
-  'valueFormat'='json-flat'
+  'valueFormat'='portable',
+  'factoryId'='30',
+  'classId'='30',
+  'valuePortableFactoryId'='30',
+  'valuePortableClassId'='30'
 )", cancellationToken: token).ConfigureAwait(false);
 
                 var map = await client.GetMapAsync<long, PMarkV5>(_mapMark).ConfigureAwait(false);
